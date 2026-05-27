@@ -1,0 +1,19 @@
+{
+  "name": "@platform/zk-mines",
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {},
+  "dependencies": {},
+  "devDependencies": {
+    "@platform/config": "workspace:*",
+    "typescript": "catalog:"
+  }
+}
