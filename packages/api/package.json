@@ -11,8 +11,11 @@
   },
   "scripts": {},
   "dependencies": {
+    "@platform/card-wars": "workspace:*",
     "@platform/db": "workspace:*",
     "@platform/env": "workspace:*",
+    "@platform/speed-o-light": "workspace:*",
+    "@platform/zk-mines": "workspace:*",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
     "dotenv": "catalog:",
