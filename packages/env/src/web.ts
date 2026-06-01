@@ -5,6 +5,8 @@ export const env = createEnv({
   clientPrefix: "VITE_",
   client: {
     VITE_SERVER_URL: z.url(),
+    VITE_CHAIN_ID: z.coerce.number().optional(),
+    VITE_CONTRACT_ADDRESS: z.string().optional(),
   },
   runtimeEnv: (import.meta as any).env,
   emptyStringAsUndefined: true,

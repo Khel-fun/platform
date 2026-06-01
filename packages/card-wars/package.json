@@ -6,12 +6,22 @@
     ".": {
       "default": "./src/index.ts"
     },
-    "./*": {
-      "default": "./src/*.ts"
+    "./styles.css": {
+      "default": "./src/app/globals.css"
     }
   },
-  "scripts": {},
-  "dependencies": {},
+  "dependencies": {
+    "@rainbow-me/rainbowkit": "^2.1.2",
+    "@tanstack/react-query": "^5.90.12",
+    "@tanstack/react-router": "^1.168.22",
+    "framer-motion": "^11.0.24",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "socket.io-client": "^4.7.4",
+    "viem": "^2.9.6",
+    "wagmi": "^2.5.20",
+    "zustand": "^4.5.2"
+  },
   "devDependencies": {
     "@platform/config": "workspace:*",
     "typescript": "catalog:"

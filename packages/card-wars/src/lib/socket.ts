@@ -1,0 +1,25 @@
+import { io, Socket } from 'socket.io-client';
+
+let socket: Socket | null = null;
+
+export function getSocket(): Socket {
+  if (!socket) {
+    socket = io(import.meta.env.VITE_CARD_WARS_BACKEND_URL ?? "http://localhost:4000", {
+      autoConnect: false,
+      extraHeaders: {
+        'ngrok-skip-browser-warning': 'true',
+      },
+    });
+  }
+  return socket;
+}
+
+export function connectSocket(): Socket {
+  const s = getSocket();
+  if (!s.connected) s.connect();
+  return s;
+}
+
+export function disconnectSocket() {
+  if (socket?.connected) socket.disconnect();
+}

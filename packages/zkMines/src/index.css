@@ -1,0 +1,1160 @@
+@import "@platform/ui/globals.css";
+
+/* Full-viewport dark shell (matches zkMines mockups behind header + game) */
+html.dark body {
+  background-color: #0a0a0a;
+}
+
+/* ===================================================================
+   MINESWEEPER GAME - PREMIUM DARK-MODE DESIGN SYSTEM
+   =================================================================== */
+
+/* --- Game Page Layout (zkMines mockup: near-black + subtle grid) --- */
+.game-page {
+  --zk-bg: #0a0a0a;
+  /* Optional Figma export: set in this file, e.g. --zk-page-figma-bg: url("/zk-bg.webp"); */
+  --zk-page-figma-bg: none;
+  --zk-page-figma-bg-opacity: 0.07;
+  position: relative;
+  flex: 1;
+  width: 100%;
+  min-height: 100svh;
+  max-width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem 1rem 1.25rem;
+  box-sizing: border-box;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  background-color: var(--zk-bg);
+  background-image:
+    radial-gradient(circle at 1px 1px, rgb(255 255 255 / 0.04) 1px, transparent 0),
+    linear-gradient(rgb(255 255 255 / 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.025) 1px, transparent 1px);
+  background-size: 22px 22px, 14px 14px, 14px 14px;
+  background-position: 0 0, 0 0, 0 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.game-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: var(--zk-page-figma-bg);
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  opacity: var(--zk-page-figma-bg-opacity);
+}
+
+.game-page > * {
+  position: relative;
+  z-index: 1;
+}
+
+.game-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.15rem;
+  width: 100%;
+  max-width: 420px;
+}
+
+/* Verifying proofs: mockup-style stack (wallet + board + proof only; no footer) */
+.game-page--proof-pending .game-container {
+  gap: 1rem;
+}
+
+/* Post-verify publish: wallet + New Game + board + CTA (no pills / proof strip / footer) */
+.game-page--publish-ready .game-container {
+  gap: 1rem;
+}
+
+/* After onchain tx confirmed: success strip + placeholder board */
+.game-page--published .game-container {
+  gap: 1rem;
+}
+
+/* --- Header --- */
+.game-header {
+  text-align: center;
+  padding: 0.5rem 0;
+}
+
+.game-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  font-size: 1.85rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #fff;
+}
+
+.title-icon {
+  font-size: 1.55rem;
+  line-height: 1;
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 45%));
+}
+
+.title-wordmark {
+  position: relative;
+  display: inline-block;
+  padding-right: 2.35rem;
+}
+
+/* Superscript-style tag: sits slightly above the wordmark, top-right */
+.title-badge {
+  position: absolute;
+  top: -0.42em;
+  right: 0;
+  font-size: 0.5rem;
+  font-weight: 800;
+  padding: 0.2rem 0.42rem;
+  border-radius: 8px;
+  background: #a040ff;
+  color: #fff;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  border: 1px solid rgb(255 255 255 / 0.14);
+}
+
+.game-subtitle {
+  font-size: 0.625rem;
+  color: #9ca3af;
+  margin-top: 0.4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-weight: 500;
+}
+
+/* --- Controls & wallet row (mock: connect alone; connected = pill then full-width New Game) --- */
+.game-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.game-controls--disconnected {
+  flex-direction: column;
+  align-items: stretch;
+  max-width: 20rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.game-controls--disconnected .connect-wallet-btn-main {
+  width: 100%;
+  min-height: 2.75rem;
+  font-size: 0.9375rem !important;
+}
+
+.game-controls--connected {
+  flex-direction: column;
+  align-items: stretch;
+  max-width: 20rem;
+  margin-left: auto;
+  margin-right: auto;
+  gap: 0;
+}
+
+/* In-session: wallet only (matches wireframe header strip above board) */
+.game-controls--in-session {
+  max-width: 410px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.game-controls--in-session.game-controls--connected {
+  max-width: 410px;
+}
+
+.wallet-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+}
+
+.wallet-row--session-only {
+  flex-direction: row;
+  justify-content: center;
+  width: 100%;
+}
+
+.wallet-row--stack {
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  gap: 0.75rem;
+}
+
+.wallet-row--stack .wallet-pill {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.wallet-row--stack .new-game-btn {
+  width: 100%;
+  min-height: 2.85rem;
+  font-size: 0.9375rem !important;
+}
+
+.wallet-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  font-family: ui-monospace, "JetBrains Mono", "Fira Code", monospace;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #fff;
+  background: rgb(24 24 27 / 0.92);
+  border: 1px solid #52525b;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04);
+}
+
+.wallet-pill--display {
+  justify-content: center;
+  font: inherit;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
+}
+
+.wallet-pill--display:hover {
+  background: rgb(30 30 34 / 0.96);
+  border-color: #71717a;
+}
+
+.wallet-pill--session {
+  border: 1px solid #153C23;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04);
+}
+
+.wallet-pill--session:hover {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.05),
+    0 0 0 1px rgb(34 197 94 / 0.18),
+    0 0 14px rgb(34 197 94 / 0.2);
+}
+
+.wallet-pill-address {
+  letter-spacing: 0.03em;
+}
+
+.new-game-btn {
+  background: #009a36 !important;
+  border: 1px solid rgb(255 255 255 / 0.1) !important;
+  color: white !important;
+  font-weight: 700 !important;
+  padding: 0.6rem 1.5rem !important;
+  border-radius: 10px !important;
+  font-size: 0.9375rem !important;
+  transition:
+    background 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease,
+    filter 0.2s ease !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+}
+
+.new-game-btn:hover:not(:disabled) {
+  background: #007d2c !important;
+  filter: brightness(1.04);
+  transform: translateY(-1px);
+  box-shadow: 0 0 18px rgb(0 154 54 / 0.35), 0 4px 14px rgb(0 154 54 / 0.25) !important;
+}
+
+.new-game-btn:disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+}
+
+/* --- Board stage: floating stat pills + proof strip --- */
+.board-stage {
+  position: relative;
+  width: 100%;
+  max-width: 410px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.board-stage--with-pills .board-shell {
+  margin-top: 4px;
+}
+
+.board-stage:not(.board-stage--with-pills) .board-shell {
+  margin-top: 0;
+}
+
+.status-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+/* Horizontal inset matches .board-shell padding + .board-grid padding so pills line up with the inner grid */
+.stat-pills-row {
+  --board-shell-pad: 0.55rem;
+  --board-grid-pad: 0.45rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  margin-bottom: -8px;
+  position: relative;
+  z-index: 2;
+  padding: 0 calc(var(--board-shell-pad) + var(--board-grid-pad));
+  box-sizing: border-box;
+}
+
+.stat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.95rem;
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+}
+
+/* XP pill — Figma: fill linear R→L (#8D7429 → #59491B), border #DE9214 ~0.96px inner */
+.stat-pill--gold {
+  background: linear-gradient(to left,#59491b, #8d7429);
+  border: 0.96px solid #de9214;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08);
+  transition: box-shadow 0.2s ease;
+}
+
+.stat-pill--gold:hover {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.1),
+    0 0 14px rgb(222 146 20 / 0.28);
+}
+
+/* Cleared cells pill — Figma: fill linear R→L (#7FD8F0 → #1A2340), border #47A9D7 ~0.96px */
+.stat-pill--blue {
+  background: linear-gradient(to left, #1a2340,#7fd8f0);
+  border: 0.96px solid #47a9d7;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08);
+  transition: box-shadow 0.2s ease;
+  text-shadow: 0 1px 2px rgb(26 35 64 / 0.55);
+}
+
+.stat-pill--blue:hover {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.1),
+    0 0 14px rgb(71 169 215 / 0.3);
+}
+
+.stat-pill-icon {
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.stat-pill-value {
+  letter-spacing: 0.02em;
+}
+
+/* Proof progress — below board per mockups */
+.proof-row {
+  width: 100%;
+  margin-top: 0.15rem;
+}
+
+.proof-row--below-board {
+  margin-top: 1rem;
+  padding: 0 0.15rem;
+}
+
+.proof-track {
+  height: 6px;
+  width: 100%;
+  border-radius: 9999px;
+  background: rgb(38 32 28);
+  border: 1px solid rgb(58 48 40);
+  overflow: hidden;
+  box-shadow: inset 0 1px 3px rgb(0 0 0 / 55%);
+}
+
+/* Gold/orange segment sweeps left → right while proofs are pending */
+.proof-track--marquee {
+  position: relative;
+}
+
+.proof-marquee-bar {
+  position: absolute;
+  top: 0;
+  width: 36%;
+  height: 100%;
+  border-radius: 9999px;
+  background: linear-gradient(
+    90deg,
+    rgb(245 158 11 / 0%) 0%,
+    rgb(251 146 60 / 0.45) 14%,
+    #fb923c 32%,
+    #f59e0b 50%,
+    #fbbf24 68%,
+    rgb(251 146 60 / 0.45) 86%,
+    rgb(245 158 11 / 0%) 100%
+  );
+  box-shadow:
+    0 0 12px rgb(251 146 60 / 0.75),
+    0 0 22px rgb(245 158 11 / 0.55),
+    0 0 34px rgb(234 88 12 / 0.25);
+  animation: proof-marquee-sweep 2.35s linear infinite;
+}
+
+@keyframes proof-marquee-sweep {
+  0% {
+    left: -36%;
+  }
+
+  100% {
+    left: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .proof-marquee-bar {
+    animation: none;
+    left: 32%;
+    opacity: 0.9;
+  }
+}
+
+.proof-fill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.45s ease;
+}
+
+.proof-fill--verified {
+  background: linear-gradient(90deg, #10b981, #34d399);
+  box-shadow: 0 0 14px rgb(16 185 129 / 45%);
+}
+
+.proof-fill--failed {
+  background: linear-gradient(90deg, #ef4444, #f87171);
+}
+
+.proof-caption {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  margin-top: 0.45rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #a1a1a1;
+  text-align: center;
+}
+
+.proof-caption--pending {
+  color: #fff;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.proof-caption--verified {
+  color: #fff;
+}
+
+.proof-caption--failed {
+  color: #fca5a5;
+}
+
+.proof-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 9999px;
+  background: #10b981;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+@keyframes pulse-badge {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* ===================================================================
+   GAME BOARD
+   =================================================================== */
+
+.board-shell {
+  border: 1px dashed #6b7280;
+  border-radius: 14px;
+  padding: 0.55rem;
+  background: rgb(10 10 12 / 0.95);
+  width: 100%;
+  max-width: 410px;
+  box-sizing: border-box;
+  margin-top: 0;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.board-shell .board-placeholder {
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+}
+
+.board-container {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Blank board while session is starting (no cells until ready) */
+.board-blank {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 1;
+  max-width: 100%;
+  border-radius: 10px;
+  background: #12121a;
+  border: 1px solid rgb(45 45 55);
+  box-sizing: border-box;
+  box-shadow: inset 0 0 24px rgb(0 0 0 / 35%);
+}
+
+.board-loading-label {
+  font-size: clamp(0.82rem, 2.5vw, 0.95rem);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: #818696;
+  text-align: center;
+  padding: 0.85rem;
+  animation: board-loading-fade 1.35s ease-in-out infinite;
+}
+
+@keyframes board-loading-fade {
+  0%,
+  100% {
+    opacity: 0.42;
+  }
+  50% {
+    opacity: 0.92;
+  }
+}
+
+/* One frame only: inner .board-grid / .board-blank keeps the border; shell is padding + tint. */
+.board-shell--active {
+  border: none;
+}
+
+.board-grid {
+  display: grid;
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+  grid-template-rows: repeat(9, minmax(0, 1fr));
+  gap: 2px;
+  width: 100%;
+  max-width: 100%;
+  padding: 0.45rem;
+  box-sizing: border-box;
+  background: #12121a;
+  border: 1px solid rgb(45 45 55);
+  border-radius: 10px;
+  box-shadow: inset 0 0 24px rgb(0 0 0 / 35%);
+  aspect-ratio: 1;
+  justify-items: stretch;
+  align-items: stretch;
+}
+
+/* --- Cell Base: fill equal grid tracks (no fixed px width) --- */
+.cell {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(0.65rem, 2.6vmin, 1.05rem);
+  font-weight: 800;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+  -webkit-user-select: none;
+  outline: none;
+}
+
+/* --- Hidden Cell --- */
+.cell-hidden {
+  background: linear-gradient(145deg, #2e2e38, #25252c);
+  border: 1px solid #3f3f4a;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.06),
+    inset 0 -1px 0 rgb(0 0 0 / 0.35);
+}
+
+.cell-hidden:hover:not(:disabled) {
+  background: linear-gradient(145deg, #36363f, #2a2a32);
+  border-color: #5a5a68;
+  box-shadow:
+    0 0 10px rgb(157 52 255 / 12%),
+    inset 0 1px 0 rgb(255 255 255 / 0.08);
+}
+
+.cell-pressed {
+  background: #1a1a22 !important;
+  box-shadow: inset 0 2px 4px rgb(0 0 0 / 45%) !important;
+  transform: scale(0.95);
+}
+
+/* --- Revealed Cell --- */
+.cell-revealed {
+  background: #18181f;
+  border: 1px solid #2a2a32;
+  cursor: default;
+  animation: cell-reveal 0.25s ease-out;
+}
+
+@keyframes cell-reveal {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* --- Number Display --- */
+.cell-number {
+  font-weight: 800;
+  font-size: inherit;
+  line-height: 1;
+  text-shadow: 0 0 6px currentColor;
+}
+
+/* --- Flagged Cell --- */
+.cell-flagged {
+  background: linear-gradient(145deg, #2e2e38, #25252c);
+  border: 1px solid rgb(220 38 38 / 55%);
+}
+
+.cell-icon {
+  font-size: clamp(0.8rem, 2.8vmin, 1.1rem);
+  line-height: 1;
+}
+
+/* --- Mine Cell --- */
+.cell-mine {
+  background: #1e1e26;
+}
+
+.cell-exploded {
+  background: linear-gradient(135deg, oklch(0.4 0.2 25), oklch(0.3 0.15 15)) !important;
+  border-color: oklch(0.5 0.2 25) !important;
+  animation: explode 0.4s ease-out !important;
+}
+
+@keyframes explode {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* --- Victory Cell --- */
+.cell-victory {
+  border-color: rgb(16 185 129 / 35%);
+}
+
+/* --- Game Over Overlay --- */
+.board-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  backdrop-filter: blur(4px);
+  animation: overlay-appear 0.5s ease-out;
+  z-index: 10;
+}
+
+@keyframes overlay-appear {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.overlay-victory {
+  background: oklch(0.2 0.08 155 / 70%);
+}
+
+.overlay-defeat {
+  background: oklch(0.15 0.05 25 / 70%);
+}
+
+.overlay-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.overlay-icon {
+  font-size: 3rem;
+  animation: bounce-icon 0.6s ease;
+}
+
+@keyframes bounce-icon {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.3); }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+.overlay-text {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: white;
+  text-shadow: 0 2px 8px oklch(0 0 0 / 50%);
+}
+
+/* --- Placeholder --- */
+.board-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 1;
+  max-width: 410px;
+  margin: 0 auto;
+  background: #141418;
+  border: 1px dashed rgb(82 82 91);
+  border-radius: 12px;
+}
+
+/* Standalone placeholder (no shell) — not used when shell wraps */
+.board-shell > .board-placeholder {
+  min-height: 0;
+}
+
+.board-placeholder-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.board-placeholder-icon {
+  font-size: 3.5rem;
+  opacity: 0.55;
+  line-height: 1;
+  animation: float 3s ease-in-out infinite;
+  filter: drop-shadow(0 2px 8px rgb(0 0 0 / 35%));
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.board-placeholder-text {
+  color: #9ca3af;
+  font-size: 0.9rem;
+  text-align: center;
+  max-width: 16rem;
+  line-height: 1.45;
+}
+
+/* --- Footer --- */
+.game-footer {
+  text-align: center;
+  font-size: 0.7rem;
+  color: #9ca3af;
+  padding: 0.35rem 0 0;
+  letter-spacing: 0.04em;
+}
+
+/* --- Disconnect modal --- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgb(0 0 0 / 65%);
+  backdrop-filter: blur(4px);
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 340px;
+  padding: 1.25rem 1.35rem;
+  border-radius: 12px;
+  background: #1a1a20;
+  border: 1px solid rgb(80 80 88);
+  box-shadow: 0 16px 48px rgb(0 0 0 / 55%);
+}
+
+.modal-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 0.5rem;
+}
+
+.modal-body {
+  font-size: 0.8125rem;
+  color: #a1a1a1;
+  line-height: 1.45;
+  margin: 0 0 1.15rem;
+}
+
+.modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.modal-actions--spread {
+  justify-content: space-between;
+  width: 100%;
+  gap: 1rem;
+}
+
+.modal-cancel {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #fff;
+  background: none;
+  border: none;
+  padding: 0.4rem 0.5rem;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.modal-cancel:hover {
+  color: #e5e5e5;
+}
+
+.modal-disconnect-confirm {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #fff;
+  background: #dc2626;
+  border: none;
+  padding: 0.5rem 1.1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.modal-disconnect-confirm:hover {
+  background: #ef4444;
+}
+
+/* --- Responsive --- */
+@media (max-width: 480px) {
+  .game-title {
+    font-size: 1.4rem;
+  }
+
+  .title-wordmark {
+    padding-right: 2.15rem;
+  }
+}
+
+/* --- On-chain & Wallet Styles --- */
+.connect-wallet-btn-main,
+.connect-wallet-btn {
+  background: #009a36 !important;
+  border: 1px solid rgb(255 255 255 / 0.1) !important;
+  color: white !important;
+  font-weight: 700 !important;
+  padding: 0.6rem 2.25rem !important;
+  border-radius: 14px !important;
+  box-shadow: none !important;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease !important;
+}
+
+.connect-wallet-btn-main:hover,
+.connect-wallet-btn:hover {
+  background: #007d2c !important;
+  transform: translateY(-1px);
+  box-shadow: 0 0 18px rgb(0 154 54 / 0.35), 0 4px 14px rgb(0 154 54 / 0.25) !important;
+  filter: brightness(1.03);
+}
+
+.onchain-panel {
+  width: 100%;
+  padding: 0.5rem 0 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-top: 0.35rem;
+}
+
+.onchain-wallet {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0.65rem;
+  background: oklch(0.12 0.01 280);
+  border-radius: 0.5rem;
+  border: 1px solid oklch(0.22 0.02 280);
+}
+
+.wallet-address {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.75rem;
+  color: oklch(0.65 0.08 290);
+}
+
+.disconnect-btn {
+  font-size: 0.7rem;
+  color: oklch(0.45 0.02 280);
+  text-decoration: none;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.25rem;
+  transition: all 0.15s ease;
+}
+
+.disconnect-btn:hover {
+  color: oklch(0.7 0.12 25);
+  background: oklch(0.2 0.05 25 / 20%);
+}
+
+.publish-btn {
+  width: 100%;
+  background: linear-gradient(to right, #e9d022, #e60b09) !important;
+  border: 1px solid rgb(255 255 255 / 0.12) !important;
+  color: white !important;
+  font-weight: 700 !important;
+  font-size: 0.9rem !important;
+  padding: 0.65rem 1.5rem !important;
+  border-radius: 8px !important;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1) !important;
+  transition:
+    filter 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease !important;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.35);
+}
+
+.publish-btn:hover:not(:disabled) {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.12),
+    0 0 20px rgb(230 11 9 / 0.32),
+    0 6px 22px rgb(233 208 34 / 0.22) !important;
+}
+
+.publish-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.publish-btn:disabled {
+  opacity: 0.45 !important;
+  background: rgb(40 40 48) !important;
+  border-color: rgb(60 60 68) !important;
+  box-shadow: none !important;
+  cursor: not-allowed;
+  filter: none !important;
+}
+
+.switch-network-btn {
+  width: 100%;
+  background: linear-gradient(to right, #cd391f, #cd391f) !important;
+  border: 1px solid rgb(255 255 255 / 0.12) !important;
+  color: white !important;
+  font-weight: 700 !important;
+  font-size: 0.9rem !important;
+  padding: 0.65rem 1.5rem !important;
+  border-radius: 8px !important;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1) !important;
+  transition:
+    filter 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease !important;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.35);
+}
+
+.switch-network-btn:hover:not(:disabled) {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.12),
+    0 0 20px rgb(230 11 9 / 0.32),
+    0 6px 22px rgb(233 208 34 / 0.22) !important;
+}
+
+.switch-network-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.publish-btn:disabled {
+  opacity: 0.45 !important;
+  background: rgb(40 40 48) !important;
+  border-color: rgb(60 60 68) !important;
+  box-shadow: none !important;
+  cursor: not-allowed;
+  filter: none !important;
+}
+
+.onchain-error {
+  color: oklch(0.65 0.2 25);
+  font-size: 0.75rem;
+  text-align: center;
+  font-weight: 500;
+}
+
+.onchain-result {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem 0.6rem;
+  padding: 0.65rem 1rem;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  width: 100%;
+}
+
+.onchain-success-row {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem 0.55rem;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.5rem 0.25rem 0.15rem;
+}
+
+.onchain-success-published {
+  color: #fff;
+  font-weight: 600;
+}
+
+.onchain-success-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 9999px;
+  background: #10b981;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.tx-link {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #f59e0b;
+  text-decoration: none;
+  border-bottom: 1px solid rgb(245 158 11 / 0.5);
+  transition: color 0.15s ease;
+}
+
+.tx-link--explorer {
+  color: #fb7185;
+  border-bottom-color: rgb(251 113 133 / 0.55);
+  font-weight: 700;
+}
+
+.tx-link:hover {
+  color: #fbbf24;
+}
+
+.tx-link--explorer:hover {
+  color: #fda4af;
+}
+
+.onchain-connect {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.5rem 0 0;
+  background: transparent;
+  border: none;
+  margin-top: 0.25rem;
+  align-items: center;
+}
+
+.onchain-label {
+  font-size: 0.78rem;
+  color: #a1a1a1;
+  text-align: center;
+  line-height: 1.5;
+  max-width: 22rem;
+}

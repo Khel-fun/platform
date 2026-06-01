@@ -6,12 +6,23 @@
     ".": {
       "default": "./src/index.ts"
     },
-    "./*": {
-      "default": "./src/*.ts"
+    "./styles.css": {
+      "default": "./src/index.css"
     }
   },
-  "scripts": {},
-  "dependencies": {},
+  "dependencies": {
+    "@platform/api": "workspace:*",
+    "@platform/env": "workspace:*",
+    "@tanstack/react-query": "^5.90.12",
+    "@trpc/client": "catalog:",
+    "@trpc/tanstack-react-query": "^11.16.0",
+    "lucide-react": "^1.8.0",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "sonner": "^2.0.7",
+    "viem": "^2.38.4",
+    "zod": "catalog:"
+  },
   "devDependencies": {
     "@platform/config": "workspace:*",
     "typescript": "catalog:"
