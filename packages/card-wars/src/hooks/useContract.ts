@@ -1,5 +1,4 @@
 import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
-import { useState } from 'react';
 import contractData from '@/contracts/CardWarRegistry.json';
 
 const CONTRACT_ADDRESS = contractData.address as `0x${string}`;

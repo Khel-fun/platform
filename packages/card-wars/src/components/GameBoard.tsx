@@ -10,63 +10,13 @@ const MAX_ROUNDS = 5;
 function getCardImg(rank: number | string, suit: string): string {
   const suitMap: Record<string, string> = { hearts: 'h', diamonds: 'd', clubs: 'c', spades: 's' };
   const rankMap: Record<string, string> = { '1': 'a', '11': 'j', '12': 'q', '13': 'k', '14': 'a', ace: 'a', jack: 'j', queen: 'q', king: 'k' };
-  const s = suitMap[suit.toLowerCase()] ?? suit[0].toLowerCase();
+  const s = suitMap[suit.toLowerCase()] ?? suit.charAt(0).toLowerCase();
   const key = String(rank).toLowerCase();
   const r = rankMap[key] ?? key;
   return asset(`/cards/${r}${s}.png`);
 }
 
-function SideDeck({ count, label, isMe, scoreChange }: { count: number; label: string; isMe: boolean; scoreChange?: number | null }) {
-  const layers = Math.min(count, 5);
-  return (
-    <div className="flex flex-col items-center gap-2">
-      {/* <div className="relative" style={{ width: 72, height: 100 }}>
-        {Array.from({ length: Math.max(layers, 1) }).map((_, i) => (
-          <div
-            key={i}
-            className="absolute rounded-md overflow-hidden"
-            style={{
-              width: 60, height: 84,
-              top: i * 3, left: i * 2,
-              zIndex: layers - i,
-              boxShadow: '0 3px 10px rgba(0,0,0,0.7)',
-              filter: isMe ? 'hue-rotate(200deg) saturate(1.4)' : 'none',
-            }}
-          >
-            <img src={asset("/cards/back_of_card.png")} alt="" className="absolute inset-0 h-full w-full object-cover" />
-          </div>
-        ))}
-      </div> */}
-      <p className="font-bold text-xs uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.5)' }}>{label}</p>
-      <div className="relative">
-        <p className="font-black text-lg" style={{ color: '#d4a74a', textShadow: '0 0 8px rgba(245,158,11,0.5)' }}>{count}</p>
-        <AnimatePresence>
-          {scoreChange !== null && scoreChange !== undefined && (
-            <motion.p
-              key={`score-${scoreChange}`}
-              className="absolute font-black text-xl"
-              style={{
-                color: scoreChange > 0 ? '#22c55e' : '#ef4444',
-                textShadow: '0 0 10px currentColor',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                top: 24,
-              }}
-              initial={{ opacity: 1, y: 0 }}
-              animate={{ opacity: 0, y: 15 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 1.5 }}
-            >
-              {scoreChange > 0 ? `+${scoreChange}` : scoreChange}
-            </motion.p>
-          )}
-        </AnimatePresence>
-      </div>
-    </div>
-  );
-}
-
-function BigCard({ card, label, won, count, scoreChange }: { card?: { rank: number | string; suit: string } | null; label: string; won?: boolean; count: number; scoreChange: number | null }) {
+function BigCard({ card, label, count, scoreChange }: { card?: { rank: number | string; suit: string } | null; label: string; count: number; scoreChange: number | null }) {
   return (
     <div className="flex flex-col items-center gap-2 sm:gap-3">
       <p className="text-xs sm:text-sm font-bold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.95)' }}>{label}</p>
@@ -102,7 +52,7 @@ function BigCard({ card, label, won, count, scoreChange }: { card?: { rank: numb
             transition={{ duration: 0.45, type: 'spring' }}
           >
             {card ? (
-              <Image src={getCardImg(card.rank, card.suit)} alt={`${card.rank} of ${card.suit}`} fill className="object-cover" />
+              <img src={getCardImg(card.rank, card.suit)} alt={`${card.rank} of ${card.suit}`} className="absolute inset-0 h-full w-full object-cover" />
             ) : (
               <img src={asset("/cards/back_of_card.png")} alt="face down" className="absolute inset-0 h-full w-full object-cover" />
             )}
@@ -365,7 +315,7 @@ export default function GameBoard() {
           <div className="flex-1 flex items-center justify-center flex-col w-full">
             {/* Opponent center card */}
             <div className="relative flex w-full">
-              <BigCard card={opponentCard} label="Opponent" won={opponentWon} count={opponentCount} scoreChange={opponentScoreChange} />
+              <BigCard card={opponentCard} label="Opponent" count={opponentCount} scoreChange={opponentScoreChange} />
               {showWinAnim && opponentCard && opponentWon && (
                 <motion.div
                   className="absolute pointer-events-none rounded-xl overflow-hidden"
@@ -387,7 +337,7 @@ export default function GameBoard() {
 
             {/* My center card */}
             <div className="relative w-full flex justify-end">
-              <BigCard card={myCard} label="Your" won={iWon} count={myCount} scoreChange={myScoreChange} />
+              <BigCard card={myCard} label="Your" count={myCount} scoreChange={myScoreChange} />
               {showWinAnim && myCard && iWon && (
                 <motion.div
                   className="absolute pointer-events-none rounded-xl overflow-hidden"

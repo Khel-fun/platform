@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { connectSocket, disconnectSocket, getSocket } from '@/lib/socket';
+import { connectSocket, getSocket } from '@/lib/socket';
 import { useGameStore } from '@/store/gameStore';
 
 export function useSocket(walletAddress: string | undefined) {
