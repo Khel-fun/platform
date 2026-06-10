@@ -12,7 +12,7 @@ export const wagmiConfig = createConfig({
   },
 });
 
-export const CONTRACT_ADDRESS = env.VITE_CONTRACT_ADDRESS as `0x${string}`;
+export const CONTRACT_ADDRESS = env.VITE_ZK_MINES_CONTRACT_ADDRESS as `0x${string}`;
 
 export const MINESWEEPER_STATE_ABI = [
   {

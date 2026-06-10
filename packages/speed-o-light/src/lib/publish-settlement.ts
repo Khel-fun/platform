@@ -43,7 +43,7 @@ export async function publishSettlementOnChain(
     transport,
   });
 
-  const contractAddress = env.VITE_CONTRACT_ADDRESS as `0x${string}`;
+  const contractAddress = env.VITE_SPEED_O_LIGHT_CONTRACT_ADDRESS as `0x${string}`;
 
   const hash = await walletClient.writeContract({
     account: playerAddress,
@@ -63,7 +63,7 @@ export async function publishSettlementOnChain(
 }
 
 export async function readOnChainPlayerStats(playerAddress: `0x${string}`) {
-  const contractAddress = env.VITE_CONTRACT_ADDRESS as `0x${string}`;
+  const contractAddress = env.VITE_SPEED_O_LIGHT_CONTRACT_ADDRESS as `0x${string}`;
   const rpc = base.rpcUrls.default.http[0];
   if (!rpc) throw new Error("No RPC URL for Base Sepolia");
 

@@ -2,11 +2,11 @@ import type { Chain } from "viem";
 import { base } from "viem/chains";
 import { env } from "@platform/env/web";
 
-/** Base (chain must match `VITE_CHAIN_ID` in `apps/web/.env`). */
+/** Base (chain must match `VITE_SPEED_O_LIGHT_CHAIN_ID` in `apps/web/.env`). */
 export function getSettlementChain(): Chain {
-  if (env.VITE_CHAIN_ID != null && env.VITE_CHAIN_ID !== base.id) {
+  if (env.VITE_SPEED_O_LIGHT_CHAIN_ID != null && env.VITE_SPEED_O_LIGHT_CHAIN_ID !== base.id) {
     throw new Error(
-      `Expected Base Mainnet (chain id ${base.id}). Set VITE_CHAIN_ID=${base.id} in apps/web/.env`,
+      `Expected Base Mainnet (chain id ${base.id}). Set VITE_SPEED_O_LIGHT_CHAIN_ID=${base.id} in apps/web/.env`,
     );
   }
   return base;

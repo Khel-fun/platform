@@ -35,7 +35,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
     links: [
       {
         rel: "icon",
-        href: "/favicon.ico",
+        href: "/game/card-wars/war.png",
       },
       {
         rel: "preconnect",

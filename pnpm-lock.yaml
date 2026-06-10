@@ -261,6 +261,9 @@ importers:
 
   packages/card-wars:
     dependencies:
+      '@platform/env':
+        specifier: workspace:*
+        version: link:../env
       '@platform/ui':
         specifier: workspace:*
         version: link:../ui

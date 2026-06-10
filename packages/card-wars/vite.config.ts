@@ -4,6 +4,7 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
   base: "/game/card-wars/",
+  envDir: "../../apps/web",
   server: {
     port: 3002,
   },

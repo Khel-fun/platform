@@ -18,6 +18,7 @@
     "check-types": "vite build && tsc --noEmit"
   },
   "dependencies": {
+    "@platform/env": "workspace:*",
     "@platform/ui": "workspace:*",
     "@rainbow-me/rainbowkit": "^2.1.2",
     "@tanstack/react-query": "^5.90.12",

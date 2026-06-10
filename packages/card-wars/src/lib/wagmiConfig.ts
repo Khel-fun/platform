@@ -2,9 +2,10 @@ import { connectorsForWallets } from '@rainbow-me/rainbowkit';
 import { injectedWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets';
 import { createConfig, http } from 'wagmi';
 import { base } from 'wagmi/chains';
+import { env } from "@platform/env/web";
 
 const appName = 'Card War';
-const projectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID ?? 'YOUR_PROJECT_ID';
+const projectId = env.VITE_WALLETCONNECT_PROJECT_ID ?? 'YOUR_PROJECT_ID';
 const chains = [base] as const;
 
 const connectors = connectorsForWallets(

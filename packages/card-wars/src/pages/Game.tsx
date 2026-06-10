@@ -6,6 +6,7 @@ import { useGameStore } from "@/store/gameStore";
 import { useSocket } from "@/hooks/useSocket";
 import GameBoard from "@/components/GameBoard";
 import { asset } from "@/lib/assets";
+import { env } from "@platform/env/web";
 
 export default function CardWarsGame() {
   const { address } = useAccount();
@@ -32,7 +33,7 @@ export default function CardWarsGame() {
     const fetchFairness = async () => {
       try {
         setFairness((prev) => ({ ...prev, loading: true }));
-        const backendUrl = import.meta.env.VITE_CARD_WARS_BACKEND_URL ?? "http://localhost:4000";
+        const backendUrl = env.VITE_CARD_WARS_BACKEND_URL ?? "http://localhost:4000";
         const response = await fetch(`${backendUrl}/api/games/${gameId}/fairness`, {
           signal: controller.signal,
           headers: { "ngrok-skip-browser-warning": "true" },
