@@ -1,8 +1,11 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@source "../../../apps/**/*.{ts,tsx}";
+@source "../../../../apps/**/*.{ts,tsx}";
 @source "../**/*.{ts,tsx}";
+@source "../../../card-wars/**/*.{ts,tsx}";
+@source "../../../speed-o-light/**/*.{ts,tsx}";
+@source "../../../zkMines/**/*.{ts,tsx}";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -77,6 +80,11 @@
 
 @theme inline {
   --font-sans: "Inter Variable", sans-serif;
+  --color-war-bg: #0f0a1e;
+  --color-war-border: #78501a;
+  --color-war-card: #1a1025;
+  --color-war-accent: #7c3aed;
+  --font-display: Georgia, "Times New Roman", serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);

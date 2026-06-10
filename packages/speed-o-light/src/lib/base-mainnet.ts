@@ -1,0 +1,38 @@
+import type { Chain } from "viem";
+import { base } from "viem/chains";
+import { env } from "@platform/env/web";
+
+/** Base (chain must match `VITE_SPEED_O_LIGHT_CHAIN_ID` in `apps/web/.env`). */
+export function getSettlementChain(): Chain {
+  if (env.VITE_SPEED_O_LIGHT_CHAIN_ID != null && env.VITE_SPEED_O_LIGHT_CHAIN_ID !== base.id) {
+    throw new Error(
+      `Expected Base Mainnet (chain id ${base.id}). Set VITE_SPEED_O_LIGHT_CHAIN_ID=${base.id} in apps/web/.env`,
+    );
+  }
+  return base;
+}
+
+export async function ensureBaseMainnet(ethereum: {
+  request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
+}) {
+  const chain = getSettlementChain();
+  const chainIdHex = `0x${chain.id.toString(16)}` as `0x${string}`;
+  try {
+    await ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: chainIdHex }] });
+  } catch (e: unknown) {
+    const code = (e as { code?: number })?.code;
+    if (code !== 4902) throw e;
+    await ethereum.request({
+      method: "wallet_addEthereumChain",
+      params: [
+        {
+          chainId: chainIdHex,
+          chainName: chain.name,
+          nativeCurrency: chain.nativeCurrency,
+          rpcUrls: chain.rpcUrls.default.http,
+          blockExplorerUrls: [chain.blockExplorers?.default?.url ??  "https://basescan.org"],
+        },
+      ],
+    });
+  }
+}

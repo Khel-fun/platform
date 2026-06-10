@@ -13,8 +13,12 @@
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
     "@platform/api": "workspace:*",
+    "@platform/card-wars": "workspace:*",
     "@platform/env": "workspace:*",
+    "@platform/speed-o-light": "workspace:*",
     "@platform/ui": "workspace:*",
+    "@platform/zk-mines": "workspace:*",
+    "@rainbow-me/rainbowkit": "^2.1.2",
     "@tailwindcss/vite": "^4.2.2",
     "@tanstack/react-query": "^5.90.12",
     "@tanstack/react-router": "^1.168.22",
@@ -27,6 +31,8 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "sonner": "^2.0.7",
+    "viem": "^2.38.4",
+    "wagmi": "^2.14.0",
     "zod": "catalog:"
   },
   "devDependencies": {

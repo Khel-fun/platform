@@ -1,0 +1,15 @@
+.card-wars-root {
+  --color-war-bg: #0f0a1e;
+  --color-war-border: #78501a;
+  --color-war-card: #1a1025;
+  --color-war-accent: #7c3aed;
+  --font-display: Georgia, "Times New Roman", serif;
+  min-height: 100svh;
+  background-color: var(--color-war-bg);
+  color: #fff;
+  -webkit-font-smoothing: antialiased;
+}
+
+.card-wars-root * {
+  box-sizing: border-box;
+}

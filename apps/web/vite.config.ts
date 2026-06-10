@@ -8,6 +8,7 @@ export default defineConfig({
     port: 3001,
   },
   resolve: {
+    dedupe: ["@rainbow-me/rainbowkit", "@tanstack/react-query", "wagmi"],
     tsconfigPaths: true,
   },
   plugins: [
