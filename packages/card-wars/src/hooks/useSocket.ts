@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { connectSocket, getSocket } from '@/lib/socket';
-import { useGameStore } from '@/store/gameStore';
+import { connectSocket, getSocket } from '../lib/socket';
+import { useGameStore } from '../store/gameStore';
 
 export function useSocket(walletAddress: string | undefined) {
   const store = useGameStore();

@@ -1,9 +1,9 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
-import { useGameStore } from "@/store/gameStore";
-import { emitFlipCard, emitResolveWar } from "@/hooks/useSocket";
-import { asset } from "@/lib/assets";
+import { useGameStore } from "../store/gameStore";
+import { emitFlipCard, emitResolveWar } from "../hooks/useSocket";
+import { asset } from "../lib/assets";
 
 const MAX_ROUNDS = 5;
 

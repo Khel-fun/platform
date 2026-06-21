@@ -2,10 +2,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Bomb, CircleUserRound, ExternalLink, Loader2, Trophy, Zap } from "lucide-react";
-import { useWallet } from "@/hooks/useWallet";
-import { shortenAddress } from "@/lib/shorten-address";
-import { publishSettlementOnChain } from "@/lib/publish-settlement";
-import { trpc } from "@/utils/trpc";
+import { useWallet } from "../hooks/useWallet";
+import { shortenAddress } from "../lib/shorten-address";
+import { publishSettlementOnChain } from "../lib/publish-settlement";
+import { trpc } from "../utils/trpc";
 
 export const Route = createFileRoute("/")({
   component: SpeedOLight,

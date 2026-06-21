@@ -2,8 +2,8 @@ import { createPublicClient, createWalletClient, custom, http } from "viem";
 import { base } from "viem/chains";
 import { env } from "@platform/env/web";
 
-import { ensureBaseMainnet } from "@/lib/base-mainnet";
-import { speedOLightStateAbi } from "@/lib/speed-o-light-state-abi";
+import { ensureBaseMainnet } from "./base-mainnet";
+import { speedOLightStateAbi } from "./speed-o-light-state-abi";
 
 export type SettlementPayload = {
   gameId: `0x${string}`;

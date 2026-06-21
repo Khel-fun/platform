@@ -8,8 +8,8 @@ import {
 } from "wagmi";
 import { base } from "wagmi/chains";
 import { Button } from "@platform/ui/components/button";
-import { trpcClient } from "@/utils/trpc";
-import { CONTRACT_ADDRESS, MINESWEEPER_STATE_ABI } from "@/lib/wagmi";
+import { trpcClient } from "../utils/trpc";
+import { CONTRACT_ADDRESS, MINESWEEPER_STATE_ABI } from "../lib/wagmi";
 
 interface PublishOnchainProps {
   gameId: string;

@@ -1,5 +1,5 @@
 import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
-import contractData from '@/contracts/CardWarRegistry.json';
+import contractData from '../contracts/CardWarRegistry.json';
 
 const CONTRACT_ADDRESS = contractData.address as `0x${string}`;
 const CONTRACT_ABI = contractData.abi;

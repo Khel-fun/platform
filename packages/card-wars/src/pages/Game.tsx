@@ -1,17 +1,18 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAccount } from "wagmi";
 import { useNavigate, Link } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
-import { useGameStore } from "@/store/gameStore";
-import { useSocket } from "@/hooks/useSocket";
-import GameBoard from "@/components/GameBoard";
-import { asset } from "@/lib/assets";
+import { useGameStore } from "../store/gameStore";
+import { useSocket } from "../hooks/useSocket";
+import GameBoard from "../components/GameBoard";
+import { asset } from "../lib/assets";
 import { env } from "@platform/env/web";
 
 export default function CardWarsGame() {
   const { address } = useAccount();
   const navigate = useNavigate();
   const { status, gameWinner, playerId, roundNumber, cardCounts, gameId, reset } = useGameStore();
+  const leaderboardRecordKeyRef = useRef<string | null>(null);
   const [fairness, setFairness] = useState({
     loading: false,
     shuffleChecked: false,
@@ -61,6 +62,45 @@ export default function CardWarsGame() {
   const opponentId = Object.keys(cardCounts).find((id) => id !== playerId) ?? "";
   const myScore = cardCounts[playerId ?? ""] ?? 0;
   const opponentScore = cardCounts[opponentId] ?? 0;
+
+  useEffect(() => {
+    if (status !== "game_over" || !gameId || !address) return;
+    const recordKey = `${gameId}:${address}`;
+    if (leaderboardRecordKeyRef.current === recordKey) return;
+    leaderboardRecordKeyRef.current = recordKey;
+
+    const controller = new AbortController();
+    const recordScore = async () => {
+      try {
+        const response = await fetch(`${env.VITE_SERVER_URL}/trpc/leaderboard.record`, {
+          method: "POST",
+          signal: controller.signal,
+          headers: {
+            "content-type": "application/json",
+            "ngrok-skip-browser-warning": "true",
+          },
+          body: JSON.stringify({
+            json: {
+              gameName: "Card-Wars",
+              sessionKey: gameId,
+              playerAddress: address,
+              score: myScore,
+              isWinner,
+            },
+          }),
+        });
+        if (!response.ok) {
+          throw new Error(`Leaderboard record failed: ${response.status}`);
+        }
+      } catch (error) {
+        if ((error as { name?: string })?.name === "AbortError") return;
+        leaderboardRecordKeyRef.current = null;
+      }
+    };
+
+    void recordScore();
+    return () => controller.abort();
+  }, [status, gameId, address, myScore, isWinner]);
 
   if (status === "game_over") {
     return (

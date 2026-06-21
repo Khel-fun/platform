@@ -3,9 +3,9 @@ import { useAccount } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useGameStore } from "@/store/gameStore";
-import { useSocket, emitJoinQueue } from "@/hooks/useSocket";
-import { asset } from "@/lib/assets";
+import { useGameStore } from "../store/gameStore";
+import { useSocket, emitJoinQueue } from "../hooks/useSocket";
+import { asset } from "../lib/assets";
 
 const FIRE = `
   radial-gradient(ellipse at 15% 70%, rgba(251,146,60,0.2) 0%, transparent 45%),

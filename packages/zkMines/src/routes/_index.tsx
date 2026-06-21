@@ -2,16 +2,16 @@ import { useState, useCallback, useEffect, useMemo } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { inferRouterOutputs } from "@trpc/server";
 import { useAccount, useConnect, useDisconnect } from "wagmi";
-import { trpc, trpcClient, type AppRouter } from "@/utils/trpc";
+import { trpc, trpcClient, type AppRouter } from "../utils/trpc";
 
 type GameOut = inferRouterOutputs<AppRouter>["game"];
-import GameBoard from "@/components/game-board";
-import GameStatus from "@/components/game-status";
-import ProofStatusBar, { getProofUiVariant } from "@/components/proof-status-bar";
-import PublishOnchain from "@/components/publish-onchain";
+import GameBoard from "../components/game-board";
+import GameStatus from "../components/game-status";
+import ProofStatusBar, { getProofUiVariant } from "../components/proof-status-bar";
+import PublishOnchain from "../components/publish-onchain";
 import { Button } from "@minesweeper/ui/components/button";
 import type { Route } from "./+types/_index";
-import { soundEffects } from "@/utils/sound";
+import { soundEffects } from "../utils/sound";
 
 const MINE_VALUE = 9;
 const SAFE_CELLS = 71;

@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { asset } from "@/lib/assets";
+import { asset } from "../lib/assets";
 
 interface PlayingCardProps {
   rank?: number;

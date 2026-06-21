@@ -2,7 +2,7 @@ import { useAccount } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { motion } from "framer-motion";
 import { Link } from "@tanstack/react-router";
-import { asset } from "@/lib/assets";
+import { asset } from "../lib/assets";
 
 const FIRE = `
   radial-gradient(ellipse at 15% 70%, rgba(251,146,60,0.22) 0%, transparent 45%),

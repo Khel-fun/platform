@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { getAddress } from "viem";
 
-import { ensureBaseMainnet } from "@/lib/base-mainnet";
+import { ensureBaseMainnet } from "../lib/base-mainnet";
 
 type EthereumProvider = {
   request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
