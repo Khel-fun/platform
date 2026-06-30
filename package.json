@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@platform/env": "workspace:*",
+    "circomlibjs": "^0.1.7",
     "dotenv": "catalog:",
     "zod": "catalog:"
   },

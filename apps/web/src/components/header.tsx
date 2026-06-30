@@ -12,8 +12,8 @@ export default function Header() {
   const onBase = chainId === base.id;
 
   return (
-    <header className="flex items-center justify-between px-6 py-4">
-      <div className="flex items-center gap-2 rounded-full bg-cyan-500/10 px-3 py-1.5 ring-1 ring-cyan-400/30">
+    <header className="relative z-20 flex items-center justify-between bg-transparent px-6 py-4">
+      <div className="flex items-center gap-2 rounded-full px-3 py-1.5">
         <svg
           viewBox="0 0 24 24"
           fill="none"
@@ -21,7 +21,7 @@ export default function Header() {
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="h-3.5 w-3.5 text-cyan-300"
+          className="h-3.5 w-3.5 text-[#99FFA5]"
           aria-hidden="true"
         >
           <path d="M12 2 4 6v6c0 5 3.5 9 8 10 4.5-1 8-5 8-10V6l-8-4Z" />
@@ -29,15 +29,15 @@ export default function Header() {
         </svg>
         <span
           style={displayStyle}
-          className="text-xs font-semibold tracking-wide text-cyan-200 uppercase"
+          className="text-xs font-semibold tracking-wide text-[#99FFA5] uppercase"
         >
           Verified by
         </span>
         <span
           style={displayStyle}
-          className="text-xs font-bold tracking-[0.18em] text-cyan-100 uppercase"
+          className="text-xs font-bold tracking-[0.18em] text-[#99FFA5] uppercase"
         >
-          ZK Verify
+          <img src="/zkverify.png" alt="ZK Verify" className="h-4 w-4" />
         </span>
       </div>
 
