@@ -1,4 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
+import { MdOutlineArrowOutward } from "react-icons/md";
 
 export const Route = createFileRoute("/")({
   component: HomePage,
@@ -7,45 +8,85 @@ export const Route = createFileRoute("/")({
 const GAMES = [
   {
     id: "card-wars",
-    name: "Card Wars",
-    description: "Real-time 1v1 War card game with provably fair decks",
+    name: "Card-Wars",
     to: "/game/card-wars",
-    accent: "from-amber-600 to-orange-900",
+    image: "/card-wars.png",
   },
   {
     id: "speed-o-light",
     name: "Speed-o-Light",
-    description: "60-second reflex sprint — avoid bombs, harvest XP",
     to: "/game/speed-o-light",
-    accent: "from-violet-700 to-indigo-950",
+    image: "/speed-o-light.png",
   },
   {
     id: "zk-mines",
-    name: "zkMines",
-    description: "Cryptographically verifiable minesweeper with ZK proofs",
+    name: "zk Mines",
     to: "/game/zk-mines",
-    accent: "from-emerald-700 to-slate-950",
+    image: "/zkMines.png",
   },
 ] as const;
 
 function HomePage() {
   return (
-    <div className="container mx-auto max-w-4xl px-4 py-8">
-      <h1 className="mb-2 text-3xl font-bold tracking-tight">KheloFun</h1>
-      <p className="mb-8 text-muted-foreground">Pick a game to play</p>
+    <div className="relative min-h-full overflow-hidden bg-[#050816] text-white">
+      <div className="pointer-events-none fixed inset-0">
+        <img
+          src="/bg.png"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-black/60" />
+      </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {GAMES.map((game) => (
-          <Link
-            key={game.id}
-            to={game.to}
-            className="group rounded-xl border bg-card p-5 transition-colors hover:border-primary/50"
+      <div className="relative z-10 mx-auto flex min-h-full flex-col items-center justify-center px-6 py-10">
+        <div className="mb-2 flex flex-col items-center">
+          <img
+            src="/khel-logo.png"
+            alt="Khel.fun"
+            className="w-[550px] max-w-full h-auto drop-shadow-[0_0_30px_rgba(255,140,40,0.35)]"
+          />
+          <p
+            className="mt-4 text-[10px] font-semibold tracking-[0.5em] text-white/70 uppercase sm:text-xs"
+            style={{ fontFamily: "Rajdhani, Inter, sans-serif" }}
           >
-            <div className={`mb-4 h-2 rounded-full bg-gradient-to-r ${game.accent}`} />
-            <h2 className="mb-2 text-lg font-semibold group-hover:text-primary">{game.name}</h2>
-            <p className="text-sm text-muted-foreground">{game.description}</p>
-          </Link>
-        ))}
+            Provably Fair Game Play
+          </p>
+        </div>
+
+        <div className="mt-16 grid w-full grid-cols-1 gap-5 sm:grid-cols-3">
+          {GAMES.map((game) => (
+            <Link
+              key={game.id}
+              to={game.to}
+              className="group relative overflow-hidden rounded-md border border-white/10 bg-slate-900/40 shadow-2xl shadow-black/40 ring-1 ring-white/5 transition-transform hover:-translate-y-1 hover:ring-white/20"
+            >
+              <div className="relative aspect-[16/10] w-full overflow-hidden">
+                <img
+                  src={game.image}
+                  alt={game.name}
+                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+              </div>
+              <div className="absolute inset-x-0 bottom-0 flex flex-col items-end gap-3 px-4 pb-5 pt-10">
+                <h2
+                  className="text-base font-bold tracking-[0.18em] text-white uppercase drop-shadow-lg sm:text-lg"
+                  style={{ fontFamily: "Rajdhani, Inter, sans-serif" }}
+                >
+                  {game.name}
+                </h2>
+                <div className="rounded-full bg-gradient-to-r flex items-center from-orange-400 to-orange-500 px-5 py-1.5 text-[10px] font-bold tracking-[0.25em] text-white uppercase shadow-lg shadow-orange-500/40 transition-transform group-hover:scale-105"
+                  style={{ fontFamily: "Rajdhani, Inter, sans-serif" }}>
+                  <span>
+                    PLAY NOW
+                  </span>
+                  <MdOutlineArrowOutward />
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );

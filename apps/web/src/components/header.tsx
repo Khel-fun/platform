@@ -1,19 +1,75 @@
-import { Link } from "@tanstack/react-router";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { useAccount, useChainId } from "wagmi";
+import { base } from "wagmi/chains";
 
-import { ModeToggle } from "./mode-toggle";
+const displayStyle: React.CSSProperties = {
+  fontFamily: "Rajdhani, Inter, sans-serif",
+};
 
 export default function Header() {
+  const { isConnected } = useAccount();
+  const chainId = useChainId();
+  const onBase = chainId === base.id;
+
   return (
-    <div>
-      <div className="flex flex-row items-center justify-between px-2 py-1">
-        <nav className="flex gap-4 text-lg">
-          <Link to="/">Home</Link>
-        </nav>
-        <div className="flex items-center gap-2">
-          <ModeToggle />
-        </div>
+    <header className="relative z-20 flex items-center justify-between bg-transparent px-6 py-4">
+      <div className="flex items-center gap-2 rounded-full px-3 py-1.5">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="h-3.5 w-3.5 text-[#99FFA5]"
+          aria-hidden="true"
+        >
+          <path d="M12 2 4 6v6c0 5 3.5 9 8 10 4.5-1 8-5 8-10V6l-8-4Z" />
+          <path d="m9 12 2 2 4-4" />
+        </svg>
+        <span
+          style={displayStyle}
+          className="text-xs font-semibold tracking-wide text-[#99FFA5] uppercase"
+        >
+          Verified by
+        </span>
+        <span
+          style={displayStyle}
+          className="text-xs font-bold tracking-[0.18em] text-[#99FFA5] uppercase"
+        >
+          <img src="/zkverify.png" alt="ZK Verify" className="h-4 w-4" />
+        </span>
       </div>
-      <hr />
-    </div>
+
+      <nav className="flex items-center gap-8">
+        <a
+          href="#about"
+          style={displayStyle}
+          className="text-xs font-semibold tracking-[0.2em] text-white/80 uppercase transition-colors hover:text-white"
+        >
+          About Us
+        </a>
+        <a
+          href="#leaderboard"
+          style={displayStyle}
+          className="text-xs font-semibold tracking-[0.2em] text-white/80 uppercase transition-colors hover:text-white"
+        >
+          Leaderboard
+        </a>
+        <ConnectButton.Custom>
+          {({ openConnectModal, mounted }) => (
+            <button
+              type="button"
+              onClick={openConnectModal}
+              disabled={!mounted}
+              style={displayStyle}
+              className="rounded-full bg-gradient-to-r from-teal-400 to-cyan-400 px-6 py-2 text-xs font-bold tracking-[0.2em] text-slate-900 uppercase shadow-lg shadow-cyan-500/20 transition-transform hover:scale-105 disabled:opacity-50"
+            >
+              {isConnected ? (onBase ? "Connected" : "Wrong Net") : "Connect Wallet"}
+            </button>
+          )}
+        </ConnectButton.Custom>
+      </nav>
+    </header>
   );
 }
