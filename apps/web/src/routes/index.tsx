@@ -46,15 +46,9 @@ function HomePage() {
             alt="Khel.fun"
             className="w-[550px] max-w-full h-auto drop-shadow-[0_0_30px_rgba(255,140,40,0.35)]"
           />
-          <p
-            className="mt-4 text-[10px] font-semibold tracking-[0.5em] text-white/70 uppercase sm:text-xs"
-            style={{ fontFamily: "Rajdhani, Inter, sans-serif" }}
-          >
-            Provably Fair Game Play
-          </p>
         </div>
 
-        <div className="mt-16 grid w-full grid-cols-1 gap-5 sm:grid-cols-3">
+        <div className="mt-12 grid w-full grid-cols-1 gap-5 sm:grid-cols-3">
           {GAMES.map((game) => (
             <Link
               key={game.id}
@@ -67,22 +61,34 @@ function HomePage() {
                   alt={game.name}
                   className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+                <div
+                  className="absolute inset-x-0 bottom-0 h-2/3 backdrop-blur-xl"
+                  style={{
+                    maskImage: "linear-gradient(to top, black, transparent)",
+                    WebkitMaskImage: "linear-gradient(to top, black, transparent)",
+                  }}
+                />
+                <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
               </div>
               <div className="absolute inset-x-0 bottom-0 flex flex-col items-end gap-3 px-4 pb-5 pt-10">
                 <h2
                   className="text-base font-bold tracking-[0.18em] text-white uppercase drop-shadow-lg sm:text-lg"
-                  style={{ fontFamily: "Rajdhani, Inter, sans-serif" }}
+                  style={{ fontFamily: "Tektur, sans-serif" }}
                 >
                   {game.name}
                 </h2>
-                <div className="rounded-full bg-gradient-to-r flex items-center from-orange-400 to-orange-500 px-5 py-1.5 text-[10px] font-bold tracking-[0.25em] text-white uppercase shadow-lg shadow-orange-500/40 transition-transform group-hover:scale-105"
+                <div className="flex items-center">
+                <div className="rounded-full rounded-r-md bg-gradient-to-r from-orange-400 to-orange-500 border border-white px-2 py-1.5 text-[10px] font-medium text-white uppercase shadow-lg shadow-orange-500/40 transition-transform"
                   style={{ fontFamily: "Rajdhani, Inter, sans-serif" }}>
                   <span>
                     PLAY NOW
                   </span>
-                  <MdOutlineArrowOutward />
-                </div>
+                  </div>
+                  <div className="rounded-full rounded-l-md bg-gradient-to-r from-orange-400 to-orange-500 border border-white px-1 py-[5.5px] text-[10px] font-medium text-white uppercase shadow-lg shadow-orange-500/40 transition-transform"
+                  style={{ fontFamily: "Rajdhani, Inter, sans-serif" }}>
+                  <MdOutlineArrowOutward size={16} />
+                  </div>
+                  </div>
               </div>
             </Link>
           ))}
