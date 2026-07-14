@@ -30,7 +30,6 @@ model game_sessions {
   status                 session_status          @default(STARTED)
   created_at             DateTime                @default(now())
   updated_at             DateTime
-  card_wars_sessions     card_wars_sessions?
   games                  games                   @relation(fields: [game_id], references: [id])
   minesweeper_sessions   minesweeper_sessions?
   proofs                 proofs[]
@@ -51,24 +50,6 @@ model games {
   game_sessions           game_sessions[]
   player_game_leaderboard player_game_leaderboard[]
   proofs                  proofs[]
-}
-
-model card_wars_sessions {
-  id                 String        @id @db.Uuid
-  session_id         String        @unique @db.Uuid
-  seed               String
-  seed_job_id        String?
-  deck_merkle_root   String
-  player_hands_roots String[]
-  score              Int[]
-  has_winner         Boolean       @default(false)
-  winner             String?
-  created_at         DateTime      @default(now())
-  updated_at         DateTime      @updatedAt
-  player_addresses   String[]
-  game_sessions      game_sessions @relation(fields: [session_id], references: [id], onDelete: Cascade)
-
-  @@index([session_id])
 }
 
 model minesweeper_sessions {

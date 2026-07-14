@@ -6,6 +6,15 @@ import { publicProcedure, router } from "../index";
 
 const SPEED_O_LIGHT_GAME = "Speed-o-Light";
 const ZK_MINES_GAME = "zk Mines";
+const GAME_NAME_ALIASES = new Map([
+  ["card-wars", "card-wars"],
+  ["card wars", "card-wars"],
+  ["speed-o-light", SPEED_O_LIGHT_GAME],
+  ["speed o light", SPEED_O_LIGHT_GAME],
+  ["zk-mines", ZK_MINES_GAME],
+  ["zkmines", ZK_MINES_GAME],
+  ["zk mines", ZK_MINES_GAME],
+]);
 const SPEED_O_LIGHT_SEQUENCE_LENGTH = 136;
 const SPEED_O_LIGHT_XP_PER_HIT = 5;
 const ZK_MINES_BOARD_SIZE = 81;
@@ -52,6 +61,12 @@ function isSameAddress(left?: string | null, right?: string | null) {
   const normalizedLeft = normalizeAddress(left);
   const normalizedRight = normalizeAddress(right);
   return normalizedLeft !== "" && normalizedLeft === normalizedRight;
+}
+
+function normalizeGameFilter(game?: string) {
+  const key = game?.trim().toLowerCase();
+  if (!key) return undefined;
+  return GAME_NAME_ALIASES.get(key) ?? game?.trim();
 }
 
 function rankLeaderboardRows(rows: Omit<LeaderboardEntry, "rank" | "isCurrentPlayer">[]): LeaderboardEntry[] {
@@ -173,8 +188,9 @@ async function listLeaderboardFromSnapshot(input: { game?: string }): Promise<Le
 }
 
 function filterLeaderboardByGame(rows: LeaderboardEntry[], game?: string) {
-  if (!game) return rows;
-  return rows.filter((row) => row.gameName === game);
+  const normalizedGame = normalizeGameFilter(game);
+  if (!normalizedGame) return rows;
+  return rows.filter((row) => row.gameName === normalizedGame);
 }
 
 function generateSpeedGrid() {
@@ -833,7 +849,7 @@ export const leaderboardRouter = router({
     )
     .query(async ({ input }) => {
       const normalizedInput = {
-        game: input?.game,
+        game: normalizeGameFilter(input?.game),
         limit: input?.limit ?? 10,
         playerAddress: input?.playerAddress,
         playerWindow: input?.playerWindow ?? 5,

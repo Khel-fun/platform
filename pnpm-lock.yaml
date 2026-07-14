@@ -24,9 +24,6 @@ catalogs:
     '@types/react-dom':
       specifier: ^19.2.3
       version: 19.2.3
-    axios:
-      specifier: ^1.17.0
-      version: 1.18.1
     dotenv:
       specifier: ^17.2.2
       version: 17.4.2
@@ -99,9 +96,6 @@ importers:
       express:
         specifier: ^5.1.0
         version: 5.2.1
-      ws:
-        specifier: ^8.18.3
-        version: 8.21.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       zod:
         specifier: 'catalog:'
         version: 4.4.3
@@ -118,9 +112,6 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 22.19.19
-      '@types/ws':
-        specifier: ^8.18.1
-        version: 8.18.1
       tsdown:
         specifier: ^0.21.9
         version: 0.21.10(typescript@6.0.3)
@@ -245,36 +236,21 @@ importers:
 
   packages/api:
     dependencies:
-      '@platform/circuits':
-        specifier: workspace:*
-        version: link:../circuits
       '@platform/db':
         specifier: workspace:*
         version: link:../db
       '@platform/env':
         specifier: workspace:*
         version: link:../env
-      '@platform/onchain-setup':
-        specifier: workspace:*
-        version: link:../onchain-setup
-      '@platform/proving-setup':
-        specifier: workspace:*
-        version: link:../proving-setup
       '@trpc/client':
         specifier: 'catalog:'
         version: 11.17.0(@trpc/server@11.17.0(typescript@6.0.3))(typescript@6.0.3)
       '@trpc/server':
         specifier: 'catalog:'
         version: 11.17.0(typescript@6.0.3)
-      bullmq:
-        specifier: 5.34.0
-        version: 5.34.0
       dotenv:
         specifier: 'catalog:'
         version: 17.4.2
-      ioredis:
-        specifier: 5.4.1
-        version: 5.4.1
       zod:
         specifier: 'catalog:'
         version: 4.4.3
@@ -291,30 +267,15 @@ importers:
 
   packages/card-wars:
     dependencies:
-      '@platform/api':
-        specifier: workspace:*
-        version: link:../api
       '@platform/env':
         specifier: workspace:*
         version: link:../env
       '@platform/ui':
         specifier: workspace:*
         version: link:../ui
-      '@tanstack/react-query':
-        specifier: ^5.90.12
-        version: 5.100.14(react@19.2.6)
       '@tanstack/react-router':
         specifier: ^1.168.22
         version: 1.170.8(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      '@trpc/client':
-        specifier: 'catalog:'
-        version: 11.17.0(@trpc/server@11.17.0(typescript@6.0.3))(typescript@6.0.3)
-      '@trpc/server':
-        specifier: 'catalog:'
-        version: 11.17.0(typescript@6.0.3)
-      '@trpc/tanstack-react-query':
-        specifier: ^11.16.0
-        version: 11.17.0(@tanstack/react-query@5.100.14(react@19.2.6))(@trpc/client@11.17.0(@trpc/server@11.17.0(typescript@6.0.3))(typescript@6.0.3))(@trpc/server@11.17.0(typescript@6.0.3))(react@19.2.6)(typescript@6.0.3)
       lucide-react:
         specifier: ^1.8.0
         version: 1.16.0(react@19.2.6)
@@ -327,15 +288,12 @@ importers:
       sonner:
         specifier: ^2.0.7
         version: 2.0.7(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      viem:
-        specifier: ^2.38.4
-        version: 2.52.0(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
+      socket.io-client:
+        specifier: ^4.7.4
+        version: 4.8.1(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       wagmi:
         specifier: ^2.14.0
         version: 2.19.5(@tanstack/query-core@5.100.14)(@tanstack/react-query@5.100.14(react@19.2.6))(@types/react@19.2.15)(bufferutil@4.1.0)(react@19.2.6)(typescript@6.0.3)(utf-8-validate@5.0.10)(viem@2.52.0(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      zod:
-        specifier: 'catalog:'
-        version: 4.4.3
     devDependencies:
       '@platform/config':
         specifier: workspace:*
@@ -365,32 +323,10 @@ importers:
         specifier: ^8.0.8
         version: 8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(tsx@4.22.3)
 
-  packages/circuits:
-    devDependencies:
-      '@platform/config':
-        specifier: workspace:*
-        version: link:../config
-      '@types/node':
-        specifier: 'catalog:'
-        version: 22.19.19
-      typescript:
-        specifier: 'catalog:'
-        version: 6.0.3
-
-  packages/config:
-    dependencies:
-      winston:
-        specifier: 3.19.0
-        version: 3.19.0
-      winston-daily-rotate-file:
-        specifier: 5.0.0
-        version: 5.0.0(winston@3.19.0)
+  packages/config: {}
 
   packages/db:
     dependencies:
-      '@platform/circuits':
-        specifier: workspace:*
-        version: link:../circuits
       '@platform/env':
         specifier: workspace:*
         version: link:../env
@@ -419,9 +355,6 @@ importers:
       prisma:
         specifier: ^7.8.0
         version: 7.8.0(@types/react-dom@19.2.3(@types/react@19.2.15))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@6.0.3)
-      tsx:
-        specifier: ^4.19.2
-        version: 4.22.3
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -438,74 +371,6 @@ importers:
         specifier: 'catalog:'
         version: 4.4.3
     devDependencies:
-      '@platform/config':
-        specifier: workspace:*
-        version: link:../config
-      '@types/node':
-        specifier: 'catalog:'
-        version: 22.19.19
-      typescript:
-        specifier: 'catalog:'
-        version: 6.0.3
-
-  packages/onchain-setup:
-    dependencies:
-      '@platform/env':
-        specifier: workspace:*
-        version: link:../env
-      dotenv:
-        specifier: 'catalog:'
-        version: 17.4.2
-      viem:
-        specifier: ^2.53.1
-        version: 2.55.1(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
-      zod:
-        specifier: 'catalog:'
-        version: 4.4.3
-    devDependencies:
-      '@platform/config':
-        specifier: workspace:*
-        version: link:../config
-      '@types/node':
-        specifier: 'catalog:'
-        version: 22.19.19
-      typescript:
-        specifier: 'catalog:'
-        version: 6.0.3
-
-  packages/proving-setup:
-    dependencies:
-      '@aztec/bb.js':
-        specifier: 3.0.0-nightly.20260102
-        version: 3.0.0-nightly.20260102
-      '@noir-lang/noir_js':
-        specifier: 1.0.0-beta.18
-        version: 1.0.0-beta.18
-      '@noir-lang/types':
-        specifier: 1.0.0-beta.18
-        version: 1.0.0-beta.18
-      '@platform/circuits':
-        specifier: workspace:*
-        version: link:../circuits
-      '@platform/db':
-        specifier: workspace:*
-        version: link:../db
-      '@platform/env':
-        specifier: workspace:*
-        version: link:../env
-      axios:
-        specifier: 'catalog:'
-        version: 1.18.1
-      dotenv:
-        specifier: 'catalog:'
-        version: 17.4.2
-      zod:
-        specifier: 'catalog:'
-        version: 4.4.3
-    devDependencies:
-      '@noir-lang/noir_codegen':
-        specifier: 1.0.0-beta.18
-        version: 1.0.0-beta.18
       '@platform/config':
         specifier: workspace:*
         version: link:../config

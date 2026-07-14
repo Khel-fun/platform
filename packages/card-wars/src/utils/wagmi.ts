@@ -18,15 +18,7 @@ export type SupportedChainId = (typeof chains)[number]["id"];
 /** Chain ids the game accepts. Anything else triggers a network-switch prompt. */
 export const supportedChainIds: readonly number[] = chains.map((c) => c.id);
 
-/**
- * The chain we ask players to switch to. Driven by `VITE_CARD_WARS_CHAIN_ID`, falling
- * back to Base if that value isn't one of the supported chains.
- */
-const configuredChainId = env.VITE_CARD_WARS_CHAIN_ID ?? base.id;
-
-export const defaultChainId: SupportedChainId = supportedChainIds.includes(configuredChainId)
-  ? (configuredChainId as SupportedChainId)
-  : base.id;
+export const defaultChainId: SupportedChainId = base.id;
 
 export function isSupportedChain(chainId: number | undefined): boolean {
   return chainId !== undefined && supportedChainIds.includes(chainId);

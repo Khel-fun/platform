@@ -1,3 +1,0 @@
-[workspace]
-members = ["card_actions", "assist", "shuffle"]
-default-member = "assist"

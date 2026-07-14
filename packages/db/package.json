@@ -14,8 +14,7 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "postinstall": "prisma generate",
-    "db:studio": "prisma studio",
-    "db:seed": "tsx src/seed.ts"
+    "db:studio": "prisma studio"
   },
   "dependencies": {
     "@platform/env": "workspace:*",
@@ -23,14 +22,12 @@
     "@prisma/client": "^7.8.0",
     "dotenv": "catalog:",
     "pg": "^8.17.1",
-    "zod": "catalog:",
-    "@platform/circuits": "workspace:*"
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@platform/config": "workspace:*",
     "@types/pg": "^8.16.0",
     "prisma": "^7.8.0",
-    "typescript": "catalog:",
-    "tsx": "^4.19.2"
+    "typescript": "catalog:"
   }
 }

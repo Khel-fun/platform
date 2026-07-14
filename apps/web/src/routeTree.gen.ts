@@ -15,7 +15,6 @@ import { Route as GameSpeedOLightRouteImport } from './routes/game/speed-o-light
 import { Route as GameCardWarsIndexRouteImport } from './routes/game/card-wars/index'
 import { Route as GameCardWarsPlayRouteImport } from './routes/game/card-wars/play'
 import { Route as GameCardWarsLobbyRouteImport } from './routes/game/card-wars/lobby'
-import { Route as GameCardWarsSessionIdRouteImport } from './routes/game/card-wars/$sessionId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -47,17 +46,10 @@ const GameCardWarsLobbyRoute = GameCardWarsLobbyRouteImport.update({
   path: '/game/card-wars/lobby',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GameCardWarsSessionIdRoute = GameCardWarsSessionIdRouteImport.update({
-  id: '/game/card-wars/$sessionId',
-  path: '/game/card-wars/$sessionId',
-  getParentRoute: () => rootRouteImport,
-} as any)
-
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/game/speed-o-light': typeof GameSpeedOLightRoute
   '/game/zk-mines': typeof GameZkMinesRoute
-  '/game/card-wars/$sessionId': typeof GameCardWarsSessionIdRoute
   '/game/card-wars/lobby': typeof GameCardWarsLobbyRoute
   '/game/card-wars/play': typeof GameCardWarsPlayRoute
   '/game/card-wars/': typeof GameCardWarsIndexRoute
@@ -66,7 +58,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/game/speed-o-light': typeof GameSpeedOLightRoute
   '/game/zk-mines': typeof GameZkMinesRoute
-  '/game/card-wars/$sessionId': typeof GameCardWarsSessionIdRoute
   '/game/card-wars/lobby': typeof GameCardWarsLobbyRoute
   '/game/card-wars/play': typeof GameCardWarsPlayRoute
   '/game/card-wars': typeof GameCardWarsIndexRoute
@@ -76,7 +67,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/game/speed-o-light': typeof GameSpeedOLightRoute
   '/game/zk-mines': typeof GameZkMinesRoute
-  '/game/card-wars/$sessionId': typeof GameCardWarsSessionIdRoute
   '/game/card-wars/lobby': typeof GameCardWarsLobbyRoute
   '/game/card-wars/play': typeof GameCardWarsPlayRoute
   '/game/card-wars/': typeof GameCardWarsIndexRoute
@@ -87,7 +77,6 @@ export interface FileRouteTypes {
     | '/'
     | '/game/speed-o-light'
     | '/game/zk-mines'
-    | '/game/card-wars/$sessionId'
     | '/game/card-wars/lobby'
     | '/game/card-wars/play'
     | '/game/card-wars/'
@@ -96,7 +85,6 @@ export interface FileRouteTypes {
     | '/'
     | '/game/speed-o-light'
     | '/game/zk-mines'
-    | '/game/card-wars/$sessionId'
     | '/game/card-wars/lobby'
     | '/game/card-wars/play'
     | '/game/card-wars'
@@ -105,7 +93,6 @@ export interface FileRouteTypes {
     | '/'
     | '/game/speed-o-light'
     | '/game/zk-mines'
-    | '/game/card-wars/$sessionId'
     | '/game/card-wars/lobby'
     | '/game/card-wars/play'
     | '/game/card-wars/'
@@ -115,7 +102,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   GameSpeedOLightRoute: typeof GameSpeedOLightRoute
   GameZkMinesRoute: typeof GameZkMinesRoute
-  GameCardWarsSessionIdRoute: typeof GameCardWarsSessionIdRoute
   GameCardWarsLobbyRoute: typeof GameCardWarsLobbyRoute
   GameCardWarsPlayRoute: typeof GameCardWarsPlayRoute
   GameCardWarsIndexRoute: typeof GameCardWarsIndexRoute
@@ -165,13 +151,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GameCardWarsLobbyRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/game/card-wars/$sessionId': {
-      id: '/game/card-wars/$sessionId'
-      path: '/game/card-wars/$sessionId'
-      fullPath: '/game/card-wars/$sessionId'
-      preLoaderRoute: typeof GameCardWarsSessionIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -179,7 +158,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   GameSpeedOLightRoute: GameSpeedOLightRoute,
   GameZkMinesRoute: GameZkMinesRoute,
-  GameCardWarsSessionIdRoute: GameCardWarsSessionIdRoute,
   GameCardWarsLobbyRoute: GameCardWarsLobbyRoute,
   GameCardWarsPlayRoute: GameCardWarsPlayRoute,
   GameCardWarsIndexRoute: GameCardWarsIndexRoute,

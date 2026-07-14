@@ -16,12 +16,7 @@
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
     "dotenv": "catalog:",
-    "zod": "catalog:",
-    "@platform/circuits": "workspace:*",
-    "@platform/onchain-setup": "workspace:*",
-    "@platform/proving-setup": "workspace:*",
-    "bullmq": "5.34.0",
-    "ioredis": "5.4.1"
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@platform/config": "workspace:*",
