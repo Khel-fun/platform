@@ -5,12 +5,13 @@ import prisma from "@platform/db";
 import { publicProcedure, router } from "../index";
 
 const SPEED_O_LIGHT_GAME = "Speed-o-Light";
-const ZK_MINES_GAME = "zk Mines";
+const ZK_MINES_GAME = "minesweeper";
 const GAME_NAME_ALIASES = new Map([
   ["card-wars", "card-wars"],
   ["card wars", "card-wars"],
   ["speed-o-light", SPEED_O_LIGHT_GAME],
   ["speed o light", SPEED_O_LIGHT_GAME],
+  ["minesweeper", ZK_MINES_GAME],
   ["zk-mines", ZK_MINES_GAME],
   ["zkmines", ZK_MINES_GAME],
   ["zk mines", ZK_MINES_GAME],
