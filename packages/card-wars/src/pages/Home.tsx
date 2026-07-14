@@ -1,90 +1,131 @@
-import { useAccount } from "wagmi";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { motion } from "framer-motion";
-import { Link } from "@tanstack/react-router";
-import { asset } from "../lib/assets";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { LogOut } from "lucide-react";
+import { useAccount, useDisconnect } from "wagmi";
 
-const FIRE = `
-  radial-gradient(ellipse at 15% 70%, rgba(251,146,60,0.22) 0%, transparent 45%),
-  radial-gradient(ellipse at 85% 70%, rgba(239,68,68,0.18) 0%, transparent 45%),
-  radial-gradient(ellipse at 50% 90%, rgba(245,158,11,0.1) 0%, transparent 50%)
-`;
+import { homeBgDesktop, homeBgMobile } from "@platform/ui/lib/assets";
+
+import { ConnectWallet } from "../components/connect-wallet";
+import {
+  CardWarsTitle,
+  pillButtonClass,
+  truncateAddress,
+} from "../components/game-ui";
+import { trpc } from "../utils/trpc";
+import { isSupportedChain } from "../utils/wagmi";
+
 
 export default function CardWarsHome() {
-  const { isConnected } = useAccount();
+  const navigate = useNavigate();
+  const { address, isConnected, chainId } = useAccount();
+  const { disconnect } = useDisconnect();
+  const ready = isConnected && isSupportedChain(chainId);
+
+  const toGame = (sessionId: string) =>
+    navigate({ to: "/game/card-wars/$sessionId", params: { sessionId } });
+
+  // PLAY enqueues the player; if no opponent is waiting we poll until one is.
+  const join = useMutation({
+    ...trpc.cardWars.joinQueue.mutationOptions(),
+    onSuccess: (res) => {
+      if (res.status === "matched") toGame(res.sessionId);
+    },
+  });
+
+  const waiting = join.data?.status === "waiting";
+  const searching = join.isPending || waiting;
+
+  const poll = useQuery({
+    ...trpc.cardWars.pollMatch.queryOptions(),
+    enabled: waiting,
+    refetchInterval: 1500,
+  });
+
+  useEffect(() => {
+    if (poll.data?.status === "matched") toGame(poll.data.sessionId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [poll.data]);
+
+  const [safeToPlay, setSafeToPlay] = useState(false);
+  useEffect(() => {
+    if (ready) {
+      const timer = setTimeout(() => setSafeToPlay(true), 400);
+      return () => clearTimeout(timer);
+    }
+    setSafeToPlay(false);
+    // If the user disconnects or switches to a wrong network,
+    // clear any leftover "waiting" state from the previous queue attempt.
+    join.reset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready]);
 
   return (
-    <div
-      className="flex min-h-svh h-full w-full flex-col items-center justify-center px-4 relative overflow-hidden bg-cover bg-center"
-      style={{ backgroundImage: `url(${asset("/home_bg.png")})` }}
-    >
-      <div className="absolute inset-0 pointer-events-none" style={{ background: FIRE }} />
+    <div className="relative flex h-svh w-full flex-col items-center justify-center overflow-hidden">
+      {/* Full-bleed background (leather + floating cards) — desktop / mobile. */}
+      <img
+        src={homeBgDesktop}
+        alt=""
+        aria-hidden
+        className="absolute inset-0 hidden h-full w-full object-cover sm:block"
+        draggable={false}
+      />
+      <img
+        src={homeBgMobile}
+        alt=""
+        aria-hidden
+        className="absolute inset-0 block h-full w-full object-cover sm:hidden"
+        draggable={false}
+      />
 
-      <motion.div
-        className="relative z-10 text-center max-w-lg w-full"
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7 }}
-      >
-        <div className="flex flex-col items-center gap-5 mb-10">
-          <ConnectButton />
+      <div className="absolute left-1/2 top-[255px] z-10 -translate-x-1/2 text-center sm:top-[290px]">
+        <CardWarsTitle className="text-7xl sm:text-8xl" />
+      </div>
 
-          {isConnected && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
-              className="w-full"
-            >
-              <Link to="/game/card-wars/lobby">
-                <motion.button
-                  className="w-full py-4 px-8 font-black text-xl tracking-[0.15em] uppercase rounded-lg"
-                  style={{
-                    background: "linear-gradient(to bottom, #b8860b, #7a4f00)",
-                    border: "2px solid #f5c842",
-                    color: "#fff8e0",
-                    textShadow: "0 1px 3px rgba(0,0,0,0.8)",
-                    boxShadow: "0 0 30px rgba(245,158,11,0.5), 0 4px 16px rgba(0,0,0,0.8)",
-                  }}
-                  whileHover={{ scale: 1.04, boxShadow: "0 0 50px rgba(245,158,11,0.8)" }}
-                  whileTap={{ scale: 0.97 }}
-                >
-                  ENTER BATTLE
-                </motion.button>
-              </Link>
-            </motion.div>
-          )}
-        </div>
+      <div className="absolute left-1/2 top-[575px] z-10 flex min-h-32 -translate-x-1/2 flex-col items-center gap-6 px-6 text-center sm:top-[583px]">
+        {address && (
+          <button
+            type="button"
+            onClick={() => disconnect()}
+            className="flex cursor-pointer items-center gap-3 font-button text-2xl tracking-wide text-white transition-colors hover:text-white/80"
+            title="Disconnect"
+          >
+            <span>{truncateAddress(address)}</span>
+            <LogOut className="size-6 text-[#2AC390]" />
+          </button>
+        )}
 
-        <div className="grid grid-cols-3 gap-4">
-          {[
-            { icon: "⚡", title: "Real-time", desc: "WebSocket instant gameplay" },
-            { icon: "🔒", title: "Fair", desc: "Deck hash published before game" },
-            { icon: "🎮", title: "PvP", desc: "Challenge players worldwide" },
-          ].map((f) => (
-            <div
-              key={f.title}
-              className="rounded-xl p-4 text-center"
-              style={{
-                background: "rgba(0,0,0,0.45)",
-                border: "1px solid rgba(120,80,26,0.5)",
-                boxShadow: "inset 0 1px 0 rgba(245,200,50,0.06)",
-              }}
-            >
-              <div className="text-2xl mb-2">{f.icon}</div>
-              <p
-                className="font-bold text-xl mb-1"
-                style={{ color: "#d4a74a", fontFamily: "Georgia, serif" }}
+        {!ready ? (
+          <div className={address ? "pt-2" : "pt-14"}>
+            <ConnectWallet />
+          </div>
+        ) : (
+          <>
+            {searching ? (
+              <p className="pt-8 font-ui text-[20px] font-semibold uppercase tracking-widest text-white/70">
+                fetching opponent ...
+              </p>
+            ) : (
+              <button
+                type="button"
+                className={pillButtonClass}
+                disabled={join.isPending || !safeToPlay}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (safeToPlay) join.mutate();
+                }}
               >
-                {f.title}
-              </p>
-              <p className="text-md font-semibold" style={{ color: "rgba(255,255,255,0.75)" }}>
-                {f.desc}
-              </p>
-            </div>
-          ))}
-        </div>
-      </motion.div>
+                PLAY
+              </button>
+            )}
+          </>
+        )}
+
+        {join.error && !searching && (
+          <p className="font-ui text-sm text-red-400">{join.error.message}</p>
+        )}
+      </div>
     </div>
   );
 }

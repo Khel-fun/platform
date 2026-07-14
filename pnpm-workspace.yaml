@@ -10,6 +10,7 @@ allowBuilds:
   keccak: false
   utf-8-validate: false
   blake-hash: false
+  msgpackr-extract: false
 catalog:
   dotenv: ^17.2.2
   zod: ^4.1.13
@@ -23,3 +24,4 @@ catalog:
   "@trpc/client": ^11.16.0
   "@types/react": ^19.2.15
   "@types/react-dom": ^19.2.3
+  axios: ^1.17.0

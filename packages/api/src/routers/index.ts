@@ -1,4 +1,5 @@
 import { publicProcedure, router } from "../index";
+import { cardWarsRouter } from "./card-wars";
 import { leaderboardRouter, speedOLightProcedures, zkMinesGameRouter } from "./games";
 
 export const appRouter = router({
@@ -6,6 +7,7 @@ export const appRouter = router({
     return "OK";
   }),
   ...speedOLightProcedures,
+  cardWars: cardWarsRouter,
   leaderboard: leaderboardRouter,
   game: zkMinesGameRouter,
 });

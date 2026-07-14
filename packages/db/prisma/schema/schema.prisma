@@ -53,6 +53,24 @@ model games {
   proofs                  proofs[]
 }
 
+model card_wars_sessions {
+  id                 String        @id @db.Uuid
+  session_id         String        @unique @db.Uuid
+  seed               String
+  seed_job_id        String?
+  deck_merkle_root   String
+  player_hands_roots String[]
+  score              Int[]
+  has_winner         Boolean       @default(false)
+  winner             String?
+  created_at         DateTime      @default(now())
+  updated_at         DateTime      @updatedAt
+  player_addresses   String[]
+  game_sessions      game_sessions @relation(fields: [session_id], references: [id], onDelete: Cascade)
+
+  @@index([session_id])
+}
+
 model minesweeper_sessions {
   id            String        @id @db.Uuid
   session_id    String        @unique @db.Uuid

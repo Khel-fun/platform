@@ -2,7 +2,6 @@ import { CardWarsHome, CardWarsProviders } from "@platform/card-wars";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import "@platform/card-wars/styles.css";
-import "@rainbow-me/rainbowkit/styles.css";
 
 export const Route = createFileRoute("/game/card-wars/")({
   component: CardWarsRoute,

@@ -1,0 +1,36 @@
+{
+  "name": "@platform/proving-setup",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./proving": {
+      "default": "./card-wars/proving.ts"
+    },
+    "./card-wars": {
+      "default": "./card-wars/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {},
+  "dependencies": {
+    "@aztec/bb.js": "3.0.0-nightly.20260102",
+    "@platform/circuits": "workspace:*",
+    "@platform/db": "workspace:*",
+    "@platform/env": "workspace:*",
+    "@noir-lang/noir_js": "1.0.0-beta.18",
+    "@noir-lang/types": "1.0.0-beta.18",
+    "axios": "catalog:",
+    "dotenv": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@platform/config": "workspace:*",
+    "@noir-lang/noir_codegen": "1.0.0-beta.18",
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}

@@ -1,18 +1,18 @@
-import { useState } from "react";
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { WagmiProvider } from 'wagmi';
-import { RainbowKitProvider, darkTheme } from '@rainbow-me/rainbowkit';
-import { wagmiConfig } from '../lib/wagmiConfig';
+import { QueryClientProvider } from "@tanstack/react-query";
+import { WagmiProvider } from "wagmi";
+
+import { PlayerAddressSync } from "./player-address-sync";
+import { queryClient } from "../utils/trpc";
+import { wagmiConfig } from "../utils/wagmi";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
-  const [queryClient] = useState(() => new QueryClient());
-
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider theme={darkTheme({ accentColor: '#7c3aed', borderRadius: 'large' })}>
+        <div className="dark h-full bg-black text-foreground">
+          <PlayerAddressSync />
           {children}
-        </RainbowKitProvider>
+        </div>
       </QueryClientProvider>
     </WagmiProvider>
   );
