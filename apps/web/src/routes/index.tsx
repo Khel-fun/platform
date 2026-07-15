@@ -439,7 +439,7 @@ function HomePage() {
         </div>
       </div>
 
-      <main className="relative z-10 mx-auto flex min-h-svh w-full max-w-[1280px] flex-col items-center px-6 pb-[52px] pt-[65px] sm:px-6 sm:pb-9 sm:pt-[104px]">
+      <main className="relative z-10 mx-auto flex min-h-svh w-full max-w-[1280px] flex-col items-center px-6 pb-[120px] pt-[65px] sm:px-6 sm:pb-9 sm:pt-[104px]">
         <section id="about" className="flex w-full flex-col items-center">
           <VerifiedBadge className="sm:hidden" />
 
@@ -462,7 +462,7 @@ function HomePage() {
           </div>
         </section>
 
-        <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 flex justify-center bg-linear-to-t from-[#050f38] via-[#050f38]/70 to-transparent pb-8 pt-24 sm:hidden">
+        <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 flex justify-center bg-linear-to-t from-black via-black/70 to-transparent pb-8 pt-24 sm:hidden">
           <WalletButton className="pointer-events-auto h-[47px] px-7 text-lg" />
         </div>
       </main>
