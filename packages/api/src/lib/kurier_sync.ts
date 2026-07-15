@@ -1,9 +1,20 @@
 import { createLogger } from "@platform/config/logger";
 import { VerificationStatus, type KurierJobStatusResponse } from "./types";
-import axios, { isAxiosError } from "axios";
-import prisma from "@platform/db";
+import axios from "axios";
+import prisma, { type Prisma, type verification_status } from "@platform/db";
+import { env } from "@platform/env/server";
 
 const log = createLogger("kurier-sync");
+
+/** Outcome of a single job sync, used by the poller to summarise a cycle. */
+export type SyncOutcome = "synced" | "skipped" | "failed";
+
+// Shared axios instance: enforces a timeout so a hung Kurier connection can
+// never stall a sync cycle, and reuses the underlying TCP connection across
+// the many per-cycle calls.
+const kurierHttp = axios.create({
+  timeout: env.KURIER_HTTP_TIMEOUT_MS,
+});
 
 // ---------------------------------------------------------------------------
 // Map from Kurier API status strings → local VerificationStatus enum.
@@ -31,14 +42,14 @@ const KURIER_STATUS_MAP: Record<string, VerificationStatus> = {
 export async function queryKurierStatus(
   jobId: string,
 ): Promise<KurierJobStatusResponse> {
-  const { KURIER_URL, KURIER_API } = process.env;
+  const { KURIER_URL, KURIER_API } = env;
   if (!KURIER_URL || !KURIER_API) {
-    throw new Error("[ERR: Env] Missing environment variables");
+    throw new Error("[ERR: Env] Missing KURIER_URL / KURIER_API");
   }
 
   // 1. Query the Kurier relayer for the job's current lifecycle status
   log.debug(`## Querying Kurier job status for jobId: ${jobId}`);
-  const job_status_response = await axios.get(
+  const job_status_response = await kurierHttp.get(
     `${KURIER_URL}/job-status/${KURIER_API}/${jobId}`,
   );
 
@@ -70,7 +81,7 @@ export async function queryKurierStatus(
 }
 
 /** Kurier lifecycle values we persist to `VerificationJob` (matches on-chain publish gate + UI). */
-const SAVEABLE_PRISMA_STATUSES = new Set([
+const SAVEABLE_PRISMA_STATUSES = new Set<verification_status>([
   "INCLUDED_IN_BLOCK",
   "FINALIZED",
   "AGGREGATION_PENDING",
@@ -78,7 +89,7 @@ const SAVEABLE_PRISMA_STATUSES = new Set([
   "FAILED",
 ]);
 
-const KURIER_TO_PRISMA: Record<VerificationStatus, string> = {
+const KURIER_TO_PRISMA: Record<VerificationStatus, verification_status> = {
   [VerificationStatus.FAILED]: "FAILED",
   [VerificationStatus.QUEUED]: "QUEUED",
   [VerificationStatus.VALID]: "VALID",
@@ -89,7 +100,7 @@ const KURIER_TO_PRISMA: Record<VerificationStatus, string> = {
   [VerificationStatus.AGGREGATED]: "AGGREGATED",
 };
 
-function kurierToPrismaStatus(v: VerificationStatus): string {
+function kurierToPrismaStatus(v: VerificationStatus): verification_status {
   const out = KURIER_TO_PRISMA[v];
   if (!out) throw new Error(`Unknown Kurier verification status: ${String(v)}`);
   return out;
@@ -98,30 +109,52 @@ function kurierToPrismaStatus(v: VerificationStatus): string {
 /**
  * Pull latest status from Kurier and persist when it reaches a saveable milestone.
  * Safe to call often (e.g. getGame poll); no-ops if Kurier is still behind SUBMITTED.
+ *
+ * Errors are caught and logged here (so a single bad job can't abort a batch) but
+ * are surfaced to the caller via the returned {@link SyncOutcome} so the poller
+ * can report cycle-level success/failure counts:
+ *   - "synced"  — a saveable status was written to the DB
+ *   - "skipped" — Kurier is still behind a saveable milestone; nothing persisted
+ *   - "failed"  — the Kurier query or DB update threw
  */
-export async function syncKurierJobToDatabase(kurierJobId: string): Promise<void> {
+export async function syncKurierJobToDatabase(
+  kurierJobId: string,
+): Promise<SyncOutcome> {
   try {
     const statusResult = await queryKurierStatus(kurierJobId);
     const prismaStatus = kurierToPrismaStatus(statusResult.verificationStatus);
-    if (!SAVEABLE_PRISMA_STATUSES.has(prismaStatus)) return;
+    if (!SAVEABLE_PRISMA_STATUSES.has(prismaStatus)) return "skipped";
 
     await prisma.verification_jobs.update({
       where: { kurier_job_id: kurierJobId },
       data: {
-        verification_status: prismaStatus as any,
+        verification_status: prismaStatus,
         tx_hash: statusResult.txHash,
         aggregation_id: statusResult.aggregationId,
-        aggregation_details: (statusResult.aggregationDetails as any) ?? undefined,
+        aggregation_details:
+          (statusResult.aggregationDetails as Prisma.InputJsonValue) ?? undefined,
       },
     });
+    return "synced";
   } catch (err) {
     log.error("[KURIER-DB-SYNC] syncing job details to db failed", { kurierJobId, err });
+    return "failed";
   }
 }
+
+/**
+ * Terminal Kurier lifecycle states — once a job reaches one of these there is
+ * nothing left to poll. NOTE: `FINALIZED` is intentionally NOT terminal; a
+ * finalized job still progresses to AGGREGATION_PENDING → AGGREGATED.
+ *
+ * Single source of truth for "which jobs still need a Kurier pull", shared by
+ * both the DB query in the poller and the guard below.
+ */
+export const TERMINAL_VERIFICATION_STATUSES = ["AGGREGATED", "FAILED"] as const;
 
 export function verificationStatusNeedsKurierPull(
   status: string | null | undefined,
 ): boolean {
   if (status == null) return true;
-  return !["FINALIZED", "AGGREGATED", "FAILED"].includes(status);
+  return !TERMINAL_VERIFICATION_STATUSES.includes(status as never);
 }
