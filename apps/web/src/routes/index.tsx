@@ -158,7 +158,7 @@ function VerifiedBadge({ className = "" }: { className?: string }) {
         verified on
       </span>
       <span className="grid size-[19px] place-items-center rounded-[5px] bg-[#99ffa5] text-[10px] font-black leading-none text-[#041127]">
-        ZK
+        <img src='zkverify.png'/>
       </span>
     </div>
   );
