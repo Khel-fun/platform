@@ -16,9 +16,9 @@
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
     "axios": "^1.18.1",
-    "bullmq": "^5.80.2",
+    "bullmq": "5.80.2",
     "dotenv": "catalog:",
-    "ioredis": "^5.11.1",
+    "ioredis": "5.10.1",
     "zod": "catalog:"
   },
   "devDependencies": {
