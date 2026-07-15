@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
@@ -164,11 +164,37 @@ function VerifiedBadge({ className = "" }: { className?: string }) {
   );
 }
 
-function MobileTabs({ openLeaderboard }: { openLeaderboard: () => void }) {
+function MobileTabs({
+  activeTab,
+  openGames,
+  openLeaderboard,
+}: {
+  activeTab: "games" | "leaderboard";
+  openGames: () => void;
+  openLeaderboard: () => void;
+}) {
   return (
-    <div className="flex items-center justify-center rounded-[28px] text-sm" style={displayFont}>
-      <span className="rounded-[24px] bg-white px-5 py-2.5 font-semibold text-[#050f38]">Games</span>
-      <button type="button" onClick={openLeaderboard} className="px-5 py-2.5 text-white">
+    <div className="flex items-center justify-center rounded-[28px] text-sm sm:hidden" style={displayFont}>
+      <button
+        type="button"
+        onClick={openGames}
+        aria-pressed={activeTab === "games"}
+        className={[
+          "rounded-[24px] px-5 py-2.5 font-semibold transition-colors",
+          activeTab === "games" ? "bg-white text-[#050f38]" : "text-white",
+        ].join(" ")}
+      >
+        Games
+      </button>
+      <button
+        type="button"
+        onClick={openLeaderboard}
+        aria-pressed={activeTab === "leaderboard"}
+        className={[
+          "rounded-[24px] px-5 py-2.5 font-semibold transition-colors",
+          activeTab === "leaderboard" ? "bg-white text-[#050f38]" : "text-white",
+        ].join(" ")}
+      >
         Leaderboard
       </button>
     </div>
@@ -201,9 +227,16 @@ function GameCard({ game }: { game: (typeof GAMES)[number] }) {
         src={game.image}
         alt={game.name}
         className={[
-          "absolute inset-0 h-full w-full scale-105 object-cover brightness-[0.78] saturate-[0.98] blur-[1.5px] transition-transform duration-500 group-hover:scale-110",
+          "absolute inset-0 h-full w-full scale-105 object-cover brightness-[0.78] saturate-[0.98] transition-transform duration-500 group-hover:scale-110",
           game.imageClassName,
         ].join(" ")}
+      />
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 backdrop-blur-[2px]"
+        style={{
+          maskImage: "linear-gradient(to top, black 0%, rgba(0,0,0,0.72) 42%, transparent 100%)",
+          WebkitMaskImage: "linear-gradient(to top, black 0%, rgba(0,0,0,0.72) 42%, transparent 100%)",
+        }}
       />
       <div className="absolute inset-0 bg-[linear-gradient(171deg,rgba(102,102,102,0)_11.52%,rgba(49,49,49,0.50)_47.04%,#000_100.21%)]" />
       <div className="absolute inset-x-0 bottom-0 flex items-end justify-end gap-4 px-7 pb-5 sm:px-12 sm:pb-8">
@@ -257,14 +290,14 @@ function GameSelector({
         aria-haspopup="listbox"
         aria-expanded={open}
         onClick={() => setMenuOpen(!open)}
-        className="flex h-[62px] w-full items-center justify-between rounded-full bg-[rgba(84,58,118,0.92)] pl-9 pr-6 text-[20px] font-bold text-white shadow-[0_10px_24px_rgba(0,0,0,0.18)] backdrop-blur-[1px] transition-colors hover:bg-[#654386] sm:h-11 sm:pl-[22px] sm:pr-3 sm:text-sm"
+        className="flex w-full items-center justify-between rounded-full bg-[rgba(84,58,118,0.92)] pl-9 pr-6 text-base font-bold text-white shadow-[0_10px_24px_rgba(0,0,0,0.18)] backdrop-blur-[1px] transition-colors hover:bg-[#654386] h-11 sm:pl-[22px] sm:pr-3 sm:text-sm"
       >
         <span className="flex-1 text-center">{getFilterLabel(selectedGame)}</span>
         <ChevronDown className={["size-8 text-[#b584ff] transition-transform sm:size-5", open ? "rotate-180" : ""].join(" ")} />
       </button>
 
       {open ? (
-        <div className="absolute left-1/2 top-[calc(100%+26px)] w-[450px] -translate-x-1/2 rounded-[54px] border-2 border-[#8c3ff3] bg-[rgba(84,58,118,0.96)] p-5 shadow-[0_0_0_1px_rgba(177,113,255,0.22),0_18px_44px_rgba(0,0,0,0.34)] backdrop-blur-md sm:left-0 sm:right-auto sm:top-[calc(100%+10px)] sm:w-full sm:translate-x-0 sm:rounded-[24px] sm:p-2">
+        <div className="absolute left-1/2 top-[calc(100%+26px)] w-[calc(100vw-32px)] max-w-[450px] -translate-x-1/2 rounded-[32px] border-2 border-[#8c3ff3] bg-[rgba(84,58,118,0.96)] p-5 shadow-[0_0_0_1px_rgba(177,113,255,0.22),0_18px_44px_rgba(0,0,0,0.34)] backdrop-blur-md sm:left-0 sm:right-auto sm:top-[calc(100%+10px)] sm:w-full sm:translate-x-0 sm:rounded-[24px] sm:p-2">
           <div role="listbox" aria-label="Filter leaderboard by game" className="space-y-5 sm:space-y-1.5">
             {GAME_FILTERS.map((game) => {
               const active = game === selectedGame;
@@ -279,7 +312,7 @@ function GameSelector({
                     setMenuOpen(false);
                   }}
                   className={[
-                    "h-[72px] w-full rounded-full text-center text-[36px] font-bold text-white transition-colors sm:h-9 sm:text-base",
+                    "w-full rounded-full text-center text-lg font-bold text-white transition-colors h-9 sm:text-base",
                     active ? "bg-[#ad7bef]" : "hover:bg-white/10",
                   ].join(" ")}
                 >
@@ -296,9 +329,11 @@ function GameSelector({
 
 function HomePage() {
   const { address, isConnected } = useAccount();
+  const heroLogoRef = useRef<HTMLImageElement>(null);
   const [selectedGame, setSelectedGame] = useState<GameFilter>("All Games");
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
   const [gameSelectorOpen, setGameSelectorOpen] = useState(false);
+  const [showMobileNavbar, setShowMobileNavbar] = useState(false);
   const connectedAddress = isConnected ? address : undefined;
   const leaderboardQuery = useQuery(
     trpc.leaderboard.list.queryOptions({
@@ -316,6 +351,18 @@ function HomePage() {
       })),
     [leaderboardQuery.data],
   );
+
+  useEffect(() => {
+    const heroLogo = heroLogoRef.current;
+    if (!heroLogo) return;
+
+    const observer = new IntersectionObserver(([entry]) => {
+      setShowMobileNavbar(!entry.isIntersecting);
+    });
+
+    observer.observe(heroLogo);
+    return () => observer.disconnect();
+  }, []);
 
   const openLeaderboard = () => {
     window.history.replaceState(null, "", "/#leaderboard");
@@ -372,17 +419,38 @@ function HomePage() {
     <div className="relative min-h-full overflow-hidden bg-[#040a25] text-white">
       <BackgroundLayer />
 
+      <div
+        className={[
+          "fixed inset-x-0 top-0 z-40 px-6 py-3 transition-all duration-300 sm:hidden",
+          showMobileNavbar ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-full opacity-0",
+        ].join(" ")}
+        aria-hidden={!showMobileNavbar}
+      >
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 h-[calc(100%+32px)] backdrop-blur-md"
+          style={{
+            maskImage: "linear-gradient(to bottom, black 0%, black 55%, transparent 100%)",
+            WebkitMaskImage: "linear-gradient(to bottom, black 0%, black 55%, transparent 100%)",
+          }}
+        />
+        <div className="relative z-10 mx-auto flex w-full max-w-[560px] items-center justify-between gap-2">
+          <img src="/khel-logo.png" alt="Khel.fun" className="h-auto w-[80px]" />
+          <MobileTabs activeTab="games" openGames={() => undefined} openLeaderboard={openLeaderboard} />
+        </div>
+      </div>
+
       <main className="relative z-10 mx-auto flex min-h-svh w-full max-w-[1280px] flex-col items-center px-6 pb-[52px] pt-[65px] sm:px-6 sm:pb-9 sm:pt-[104px]">
         <section id="about" className="flex w-full flex-col items-center">
           <VerifiedBadge className="sm:hidden" />
 
           <img
+            ref={heroLogoRef}
             src="/khel-logo.png"
             alt="Khel.fun"
-            className="mt-14 h-auto w-[281px] drop-shadow-[0_0_30px_rgba(255,120,44,0.28)] sm:mt-0 sm:w-[557px]"
+            className="md:mt-14 h-auto w-[281px] drop-shadow-[0_0_30px_rgba(255,120,44,0.28)] sm:mt-0 sm:w-[557px]"
           />
 
-          <MobileTabs openLeaderboard={openLeaderboard} />
+          <MobileTabs activeTab="games" openGames={() => undefined} openLeaderboard={openLeaderboard} />
 
           <div
             id="games"
@@ -417,9 +485,9 @@ function HomePage() {
 
             <div className="relative z-10 flex min-h-[calc(100svh-60px)] flex-col sm:min-h-[524px]">
               <div className="mb-12 flex items-center justify-between sm:hidden">
-                <img src="/khel-logo.png" alt="Khel.fun" className="h-24 w-auto object-contain" />
+                <img src="/khel-logo.png" alt="Khel.fun" className="h-20 w-auto object-contain" />
                 <div className="scale-[0.86]">
-                  <MobileTabs openLeaderboard={() => undefined} />
+                  <MobileTabs activeTab="leaderboard" openGames={closeLeaderboard} openLeaderboard={() => undefined} />
                 </div>
               </div>
 
