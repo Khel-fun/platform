@@ -79,6 +79,7 @@ function BackgroundLayer() {
         alt=""
         className="absolute inset-0 h-full w-full object-cover opacity-85 mix-blend-screen sm:object-[50%_48%]"
       />
+      <div className="absolute inset-0 bg-black/60" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_16%,rgba(255,255,255,0.10),transparent_10%),radial-gradient(ellipse_at_82%_58%,rgba(196,74,62,0.18),transparent_32%),linear-gradient(180deg,rgba(0,0,0,0.42)_0%,rgba(0,0,0,0)_40%,rgba(0,0,0,0.36)_100%)]" />
     </div>
   );
