@@ -1,13 +1,20 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useAccount, useChainId } from "wagmi";
+import { LogOut } from "lucide-react";
+import { useAccount, useChainId, useDisconnect } from "wagmi";
 import { base } from "wagmi/chains";
 
 const displayStyle: React.CSSProperties = {
   fontFamily: "Rajdhani, Inter, sans-serif",
 };
 
+function shortAddress(address: string) {
+  if (address.length <= 16) return address;
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+}
+
 export default function Header() {
-  const { isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
+  const { disconnect } = useDisconnect();
   const chainId = useChainId();
   const onBase = chainId === base.id;
   const openLeaderboard = (event: React.MouseEvent<HTMLAnchorElement>) => {
@@ -17,78 +24,83 @@ export default function Header() {
   };
 
   return (
-    <header className="fixed inset-x-0 top-0 z-40 flex items-center justify-between px-5 py-5 text-white sm:px-10 sm:py-7 lg:px-[7.5vw]">
-      <a href="/#about" className="block sm:hidden" aria-label="Khel.fun home">
-        <img
-          src="/khel-logo.png"
-          alt="Khel.fun"
-          className="h-11 w-auto drop-shadow-[0_0_18px_rgba(255,140,40,0.24)]"
-        />
-      </a>
-
-      <div className="hidden items-center gap-2 sm:flex">
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="h-3.5 w-3.5 text-emerald-300 drop-shadow-[0_0_10px_rgba(52,211,153,0.7)]"
-          aria-hidden="true"
-        >
-          <path d="M12 2 4 6v6c0 5 3.5 9 8 10 4.5-1 8-5 8-10V6l-8-4Z" />
-          <path d="m9 12 2 2 4-4" />
-        </svg>
+    <header className="pointer-events-none fixed inset-x-0 top-0 z-40 hidden items-center justify-between px-11 py-9 text-white sm:flex lg:px-[44px]">
+      <div className="pointer-events-auto flex items-center gap-2 text-[#99ffa5]">
+        <span className="grid size-[11.5px] place-items-center rounded-full border border-[#99ffa5]/80 bg-[#99ffa5]/30">
+          <span className="size-[5.5px] rounded-full bg-[#99ffa5]" />
+        </span>
         <span
           style={displayStyle}
-          className="text-[10px] font-semibold tracking-wide text-white/70 lowercase sm:text-xs"
+          className="text-xs font-medium tracking-normal lowercase text-[#99ffa5]"
         >
           verified on
         </span>
         <span
           style={displayStyle}
-          className="text-[10px] font-bold tracking-[0.16em] text-emerald-300 uppercase sm:text-xs"
+          className="grid size-[19px] place-items-center rounded-[5px] bg-[#99ffa5] text-[10px] font-black leading-none text-[#041127]"
         >
           ZK
         </span>
       </div>
 
-      <nav className="flex items-center gap-4 sm:gap-8">
-        <a
-          href="/#games"
-          style={displayStyle}
-          className="text-[10px] font-medium text-white/86 transition-colors hover:text-white sm:hidden"
-        >
-          Games
-        </a>
+      <nav className="pointer-events-auto flex items-center gap-16">
         <a
           href="/#about"
           style={displayStyle}
-          className="hidden text-[10px] font-semibold tracking-[0.2em] text-white/80 uppercase transition-colors hover:text-white sm:inline sm:text-xs"
+          className="text-base font-medium text-white transition-colors hover:text-[#99ffa5]"
         >
-          About Us
+          ABOUT US
         </a>
         <a
           href="/#leaderboard"
           onClick={openLeaderboard}
           style={displayStyle}
-          className="rounded-full bg-white px-4 py-2 text-[10px] font-bold text-[#070923] transition-transform hover:scale-105 sm:bg-transparent sm:px-0 sm:py-0 sm:text-xs sm:font-semibold sm:tracking-[0.2em] sm:text-white/80 sm:uppercase sm:hover:scale-100 sm:hover:text-white"
+          className="text-base font-medium text-white transition-colors hover:text-[#99ffa5]"
         >
-          Leaderboard
+          LEADERBOARD
         </a>
         <ConnectButton.Custom>
-          {({ openConnectModal, mounted }) => (
-            <button
-              type="button"
-              onClick={openConnectModal}
-              disabled={!mounted}
-              style={displayStyle}
-              className="hidden rounded-full bg-gradient-to-r from-cyan-400 to-violet-500 px-6 py-2 text-[10px] font-bold tracking-[0.18em] text-white uppercase shadow-[0_0_24px_rgba(34,211,238,0.22)] transition-transform hover:scale-105 disabled:opacity-50 sm:block"
-            >
-              {isConnected ? (onBase ? "Connected" : "Wrong Net") : "Connect Wallet"}
-            </button>
-          )}
+          {({ account, openConnectModal, mounted }) => {
+            const walletAddress = address ?? account?.address ?? "";
+            const connectedLabel = onBase ? shortAddress(walletAddress) : "wrong net";
+
+            if (isConnected || account) {
+              return (
+                <div
+                  style={displayStyle}
+                  className="inline-flex h-[33px] items-center overflow-hidden rounded-full border border-white/90 bg-[radial-gradient(circle_at_24%_-120%,#07f49e_0%,#257c8e_48%,#42047e_100%)] text-[10px] font-medium lowercase text-white shadow-[0_0_22px_rgba(34,211,238,0.28)] transition-transform hover:scale-105 disabled:opacity-50"
+                >
+                  <button type="button" onClick={openConnectModal} disabled={!mounted} className="h-full px-[14px] disabled:opacity-50">
+                    {connectedLabel}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      disconnect();
+                    }}
+                    disabled={!mounted}
+                    aria-label="Disconnect wallet"
+                    className="grid h-full w-9 place-items-center border-l border-white/90 bg-white/5 disabled:opacity-50"
+                  >
+                    <LogOut className="size-4" strokeWidth={2.1} />
+                  </button>
+                </div>
+              );
+            }
+
+            return (
+              <button
+                type="button"
+                onClick={openConnectModal}
+                disabled={!mounted}
+                style={displayStyle}
+                className="h-[33px] rounded-full border border-white/90 bg-[radial-gradient(circle_at_24%_-120%,#07f49e_0%,#257c8e_48%,#42047e_100%)] px-[14px] text-[10px] font-medium lowercase text-white shadow-[0_0_22px_rgba(34,211,238,0.28)] transition-transform hover:scale-105 disabled:opacity-50"
+              >
+                connect wallet
+              </button>
+            );
+          }}
         </ConnectButton.Custom>
       </nav>
     </header>

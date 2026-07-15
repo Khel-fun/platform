@@ -46,6 +46,7 @@ const GameCardWarsLobbyRoute = GameCardWarsLobbyRouteImport.update({
   path: '/game/card-wars/lobby',
   getParentRoute: () => rootRouteImport,
 } as any)
+
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/game/speed-o-light': typeof GameSpeedOLightRoute

@@ -35,6 +35,7 @@ model game_sessions {
   proofs                 proofs[]
   session_players        session_players[]
   speed_o_light_sessions speed_o_light_sessions?
+  card_wars_sessions     card_wars_sessions?
 
   @@index([game_id])
   @@index([game_id, status])

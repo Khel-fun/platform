@@ -114,7 +114,8 @@ function selectLeaderboardWindow(input: {
   return Array.from(merged.values()).sort((left, right) => left.rank - right.rank);
 }
 
-async function listLeaderboardFromSessions(): Promise<LeaderboardEntry[]> {
+async function listLeaderboardFromSessions(input: { game?: string }): Promise<LeaderboardEntry[]> {
+  const normalizedGame = normalizeGameFilter(input.game);
   const rows = await prisma.session_players.findMany({
     where: {
       xp: {
@@ -141,6 +142,10 @@ async function listLeaderboardFromSessions(): Promise<LeaderboardEntry[]> {
   const bestByPlayerGame = new Map<string, (typeof rows)[number]>();
   for (const row of rows) {
     const gameName = row.game_sessions.games.name;
+    if (normalizedGame && gameName !== normalizedGame) {
+      continue;
+    }
+
     const key = `${row.player_address.toLowerCase()}:${gameName}`;
     if (!bestByPlayerGame.has(key)) {
       bestByPlayerGame.set(key, row);
@@ -186,12 +191,6 @@ async function listLeaderboardFromSnapshot(input: { game?: string }): Promise<Le
       updatedAt: row.updated_at.toISOString(),
     })),
   );
-}
-
-function filterLeaderboardByGame(rows: LeaderboardEntry[], game?: string) {
-  const normalizedGame = normalizeGameFilter(game);
-  if (!normalizedGame) return rows;
-  return rows.filter((row) => row.gameName === normalizedGame);
 }
 
 function generateSpeedGrid() {
@@ -855,7 +854,7 @@ export const leaderboardRouter = router({
         playerAddress: input?.playerAddress,
         playerWindow: input?.playerWindow ?? 5,
       };
-      const sessionRows = filterLeaderboardByGame(await listLeaderboardFromSessions(), normalizedInput.game);
+      const sessionRows = await listLeaderboardFromSessions(normalizedInput);
       if (sessionRows.length > 0) {
         return selectLeaderboardWindow({
           rows: sessionRows,
