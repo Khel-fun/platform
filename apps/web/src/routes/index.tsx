@@ -135,7 +135,7 @@ function WalletButton({ className = "" }: { className?: string }) {
             onClick={openConnectModal}
             disabled={!mounted}
             className={[
-              "rounded-full border border-white/90 bg-[radial-gradient(circle_at_22%_0%,#07f49e_0%,#257c8e_46%,#42047e_100%)] text-center font-medium text-white shadow-[0_0_22px_rgba(34,211,238,0.28)] transition-transform hover:scale-105 disabled:opacity-50",
+              "rounded-full border border-white/90 bg-[radial-gradient(circle_at_22%_0%,#07f49e_0%,#257c8e_46%,#42047e_100%)] text-center font-medium text-white capitalize shadow-[0_0_22px_rgba(34,211,238,0.28)] transition-transform hover:scale-105 disabled:opacity-50",
               className,
             ].join(" ")}
             style={displayFont}
@@ -180,7 +180,7 @@ function MobileTabs({
         onClick={openGames}
         aria-pressed={activeTab === "games"}
         className={[
-          "rounded-[24px] px-5 py-2.5 font-semibold transition-colors",
+          "rounded-[24px] px-5 py-2.5 font-semibold transition-colors cursor-pointer",
           activeTab === "games" ? "bg-white text-[#050f38]" : "text-white",
         ].join(" ")}
       >
@@ -191,7 +191,7 @@ function MobileTabs({
         onClick={openLeaderboard}
         aria-pressed={activeTab === "leaderboard"}
         className={[
-          "rounded-[24px] px-5 py-2.5 font-semibold transition-colors",
+          "rounded-[24px] px-5 py-2.5 font-semibold transition-colors cursor-pointer",
           activeTab === "leaderboard" ? "bg-white text-[#050f38]" : "text-white",
         ].join(" ")}
       >
@@ -439,7 +439,7 @@ function HomePage() {
         </div>
       </div>
 
-      <main className="relative z-10 mx-auto flex min-h-svh w-full max-w-[1280px] flex-col items-center px-6 pb-[120px] pt-[65px] sm:px-6 sm:pb-9 sm:pt-[104px]">
+      <main className="relative z-10 mx-auto flex min-h-svh w-full max-w-[1280px] flex-col items-center px-6 pb-[120px] pt-[40px] sm:px-6 sm:pb-9 sm:pt-[104px]">
         <section id="about" className="flex w-full flex-col items-center">
           <VerifiedBadge className="sm:hidden" />
 

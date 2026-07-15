@@ -95,7 +95,7 @@ export default function Header() {
                 onClick={openConnectModal}
                 disabled={!mounted}
                 style={displayStyle}
-                className="h-[33px] rounded-full border border-white/90 bg-[radial-gradient(circle_at_24%_-120%,#07f49e_0%,#257c8e_48%,#42047e_100%)] px-[14px] text-[10px] font-medium lowercase text-white shadow-[0_0_22px_rgba(34,211,238,0.28)] transition-transform hover:scale-105 disabled:opacity-50"
+                className="h-[33px] rounded-full border border-white/90 bg-[radial-gradient(circle_at_24%_-120%,#07f49e_0%,#257c8e_48%,#42047e_100%)] px-[14px] text-base font-medium capitalize text-white shadow-[0_0_22px_rgba(34,211,238,0.28)] transition-transform hover:scale-105 disabled:opacity-50"
               >
                 connect wallet
               </button>
