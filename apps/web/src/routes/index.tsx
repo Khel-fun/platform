@@ -330,7 +330,7 @@ function GameSelector({
 
 function HomePage() {
   const { address, isConnected } = useAccount();
-  const heroLogoRef = useRef<HTMLImageElement>(null);
+  const pageRef = useRef<HTMLDivElement>(null);
   const [selectedGame, setSelectedGame] = useState<GameFilter>("All Games");
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
   const [gameSelectorOpen, setGameSelectorOpen] = useState(false);
@@ -354,15 +354,21 @@ function HomePage() {
   );
 
   useEffect(() => {
-    const heroLogo = heroLogoRef.current;
-    if (!heroLogo) return;
+    const scrollContainer = pageRef.current?.parentElement;
+    if (!scrollContainer) return;
 
-    const observer = new IntersectionObserver(([entry]) => {
-      setShowMobileNavbar(!entry.isIntersecting);
-    });
+    const mobileQuery = window.matchMedia("(max-width: 639px)");
+    const updateMobileNavbar = () => {
+      setShowMobileNavbar(mobileQuery.matches && scrollContainer.scrollTop > 0);
+    };
 
-    observer.observe(heroLogo);
-    return () => observer.disconnect();
+    updateMobileNavbar();
+    scrollContainer.addEventListener("scroll", updateMobileNavbar, { passive: true });
+    mobileQuery.addEventListener("change", updateMobileNavbar);
+    return () => {
+      scrollContainer.removeEventListener("scroll", updateMobileNavbar);
+      mobileQuery.removeEventListener("change", updateMobileNavbar);
+    };
   }, []);
 
   const openLeaderboard = () => {
@@ -417,7 +423,7 @@ function HomePage() {
   };
 
   return (
-    <div className="relative min-h-full overflow-hidden bg-[#040a25] text-white">
+    <div ref={pageRef} className="relative min-h-full overflow-hidden bg-[#040a25] text-white">
       <BackgroundLayer />
 
       <div
@@ -444,14 +450,22 @@ function HomePage() {
         <section id="about" className="flex w-full flex-col items-center">
           <VerifiedBadge className="sm:hidden" />
 
-          <img
-            ref={heroLogoRef}
-            src="/khel-logo.png"
-            alt="Khel.fun"
-            className="md:mt-14 h-auto w-[281px] drop-shadow-[0_0_30px_rgba(255,120,44,0.28)] sm:mt-0 sm:w-[557px]"
-          />
-
-          <MobileTabs activeTab="games" openGames={() => undefined} openLeaderboard={openLeaderboard} />
+          <div
+            className={[
+              "flex flex-col items-center overflow-hidden transition-[max-height,opacity,transform] duration-300 sm:max-h-none sm:overflow-visible",
+              showMobileNavbar
+                ? "pointer-events-none -translate-y-2 max-h-0 opacity-0"
+                : "max-h-[260px] translate-y-0 opacity-100",
+            ].join(" ")}
+            aria-hidden={showMobileNavbar}
+          >
+            <img
+              src="/khel-logo.png"
+              alt="Khel.fun"
+              className="md:mt-14 h-auto w-[281px] shrink-0 drop-shadow-[0_0_30px_rgba(255,120,44,0.28)] sm:mt-0 sm:w-[557px]"
+            />
+            <MobileTabs activeTab="games" openGames={() => undefined} openLeaderboard={openLeaderboard} />
+          </div>
 
           <div
             id="games"
