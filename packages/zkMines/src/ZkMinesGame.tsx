@@ -2,7 +2,9 @@ import { useState, useCallback, useEffect, useMemo } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { inferRouterOutputs } from "@trpc/server";
 import { useAccount, useConnect, useDisconnect } from "wagmi";
-import { trpc, trpcClient, type AppRouter } from "./utils/trpc";
+import trpcRuntime, { type AppRouter } from "./utils/trpc";
+
+const { trpc, trpcClient } = trpcRuntime;
 
 type GameOut = inferRouterOutputs<AppRouter>["game"];
 import GameBoard from "./components/game-board";

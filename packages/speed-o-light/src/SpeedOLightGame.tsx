@@ -4,7 +4,9 @@ import { Bomb, CircleUserRound, ExternalLink, Loader2, Trophy, Zap } from "lucid
 import { useWallet } from "./hooks/useWallet";
 import { shortenAddress } from "./lib/shorten-address";
 import { publishSettlementOnChain } from "./lib/publish-settlement";
-import { trpc } from "./utils/trpc";
+import trpcRuntime from "./utils/trpc";
+
+const { trpc } = trpcRuntime;
 
 // ---------------------------------------------------------------------------
 // Game constants
