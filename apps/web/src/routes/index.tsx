@@ -38,8 +38,8 @@ const GAMES = [
   },
 ] as const;
 
-const GAME_FILTERS = ["All Games", ...GAMES.map((game) => game.name)] as const;
-type GameFilter = (typeof GAME_FILTERS)[number];
+const ALL_GAMES_FILTER = "All Games";
+type GameFilter = string;
 
 const displayFont = { fontFamily: "Rajdhani, Inter, sans-serif" };
 const medalAssets = {
@@ -264,25 +264,22 @@ function PodiumMedal({ rank, medal }: { rank: number; medal: keyof typeof medalA
 }
 
 function getFilterLabel(filter: GameFilter) {
+  if (filter === "card-wars") return "Card-Wars";
   if (filter === "Speed-o-Light") return "Speed - O - Light";
-  if (filter === "zk Mines") return "ZK Mines";
+  if (filter === "zk-mines" || filter === "zk Mines" || filter === "minesweeper") return "ZK Mines";
   return filter;
 }
 
 function GameSelector({
+  gameFilters,
   selectedGame,
   onChange,
-  onOpenChange,
 }: {
+  gameFilters: GameFilter[];
   selectedGame: GameFilter;
   onChange: (game: GameFilter) => void;
-  onOpenChange?: (open: boolean) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const setMenuOpen = (value: boolean) => {
-    setOpen(value);
-    onOpenChange?.(value);
-  };
 
   return (
     <div className="relative z-30 w-[220px] sm:w-[160px]" style={displayFont}>
@@ -290,7 +287,7 @@ function GameSelector({
         type="button"
         aria-haspopup="listbox"
         aria-expanded={open}
-        onClick={() => setMenuOpen(!open)}
+        onClick={() => setOpen(!open)}
         className="flex w-full items-center justify-between rounded-full bg-[rgba(84,58,118,0.92)] pl-9 pr-6 text-base font-bold text-white shadow-[0_10px_24px_rgba(0,0,0,0.18)] backdrop-blur-[1px] transition-colors hover:bg-[#654386] h-11 sm:pl-[22px] sm:pr-3 sm:text-sm"
       >
         <span className="flex-1 text-center">{getFilterLabel(selectedGame)}</span>
@@ -300,7 +297,7 @@ function GameSelector({
       {open ? (
         <div className="absolute left-1/2 top-[calc(100%+26px)] w-[calc(100vw-32px)] max-w-[450px] -translate-x-1/2 rounded-[32px] border-2 border-[#8c3ff3] bg-[rgba(84,58,118,0.96)] p-5 shadow-[0_0_0_1px_rgba(177,113,255,0.22),0_18px_44px_rgba(0,0,0,0.34)] backdrop-blur-md sm:left-0 sm:right-auto sm:top-[calc(100%+10px)] sm:w-full sm:translate-x-0 sm:rounded-[24px] sm:p-2">
           <div role="listbox" aria-label="Filter leaderboard by game" className="space-y-5 sm:space-y-1.5">
-            {GAME_FILTERS.map((game) => {
+            {gameFilters.map((game) => {
               const active = game === selectedGame;
               return (
                 <button
@@ -310,7 +307,7 @@ function GameSelector({
                   aria-selected={active}
                   onClick={() => {
                     onChange(game);
-                    setMenuOpen(false);
+                    setOpen(false);
                   }}
                   className={[
                     "w-full rounded-full text-center text-lg font-bold text-white transition-colors h-9 sm:text-base",
@@ -331,14 +328,18 @@ function GameSelector({
 function HomePage() {
   const { address, isConnected } = useAccount();
   const heroLogoRef = useRef<HTMLImageElement>(null);
-  const [selectedGame, setSelectedGame] = useState<GameFilter>("All Games");
+  const [selectedGame, setSelectedGame] = useState<GameFilter>(ALL_GAMES_FILTER);
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
-  const [gameSelectorOpen, setGameSelectorOpen] = useState(false);
   const [showMobileNavbar, setShowMobileNavbar] = useState(false);
   const connectedAddress = isConnected ? address : undefined;
+  const leaderboardGamesQuery = useQuery(trpc.leaderboard.games.queryOptions());
+  const gameFilters = useMemo<GameFilter[]>(
+    () => [ALL_GAMES_FILTER, ...(leaderboardGamesQuery.data ?? GAMES.map((game) => game.id))],
+    [leaderboardGamesQuery.data],
+  );
   const leaderboardQuery = useQuery(
     trpc.leaderboard.list.queryOptions({
-      game: selectedGame === "All Games" ? undefined : selectedGame,
+      game: selectedGame === ALL_GAMES_FILTER ? undefined : selectedGame,
       limit: 8,
       playerAddress: connectedAddress,
       playerWindow: 5,
@@ -372,7 +373,6 @@ function HomePage() {
 
   const handleGameChange = (game: GameFilter) => {
     setSelectedGame(game);
-    setGameSelectorOpen(false);
     window.history.replaceState(null, "", "/#leaderboard");
     setLeaderboardOpen(true);
   };
@@ -400,7 +400,6 @@ function HomePage() {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setLeaderboardOpen(false);
-        setGameSelectorOpen(false);
       }
     };
 
@@ -410,7 +409,6 @@ function HomePage() {
 
   const closeLeaderboard = () => {
     setLeaderboardOpen(false);
-    setGameSelectorOpen(false);
     if (window.location.hash === "#leaderboard") {
       window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
     }
@@ -500,15 +498,10 @@ function HomePage() {
                 >
                   LEADERBOARD
                 </h1>
-                <GameSelector selectedGame={selectedGame} onChange={handleGameChange} onOpenChange={setGameSelectorOpen} />
+                <GameSelector gameFilters={gameFilters} selectedGame={selectedGame} onChange={handleGameChange} />
               </div>
 
-              <div
-                className={[
-                  "mx-auto w-full max-w-[444px] space-y-2 transition-[margin] duration-200",
-                  gameSelectorOpen ? "mt-[500px] sm:mt-[220px]" : "mt-7 sm:mt-20",
-                ].join(" ")}
-              >
+              <div className="mx-auto mt-7 w-full max-w-[444px] space-y-2 sm:mt-20">
                 {leaderboardQuery.isLoading ? (
                   Array.from({ length: 8 }).map((_, index) => (
                     <div
