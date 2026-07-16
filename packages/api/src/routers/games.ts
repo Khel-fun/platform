@@ -5,16 +5,16 @@ import prisma from "@platform/db";
 import { publicProcedure, router } from "../index";
 
 const SPEED_O_LIGHT_GAME = "Speed-o-Light";
-const ZK_MINES_GAME = "minesweeper";
+const ZK_MINES_GAME = "zk-mines";
 const GAME_NAME_ALIASES = new Map([
   ["card-wars", "card-wars"],
   ["card wars", "card-wars"],
   ["speed-o-light", SPEED_O_LIGHT_GAME],
   ["speed o light", SPEED_O_LIGHT_GAME],
-  ["minesweeper", ZK_MINES_GAME],
   ["zk-mines", ZK_MINES_GAME],
   ["zkmines", ZK_MINES_GAME],
   ["zk mines", ZK_MINES_GAME],
+  ["minesweeper", ZK_MINES_GAME],
 ]);
 const SPEED_O_LIGHT_SEQUENCE_LENGTH = 136;
 const SPEED_O_LIGHT_XP_PER_HIT = 5;
@@ -142,11 +142,11 @@ async function listLeaderboardFromSessions(input: { game?: string }): Promise<Le
   const bestByPlayerGame = new Map<string, (typeof rows)[number]>();
   for (const row of rows) {
     const gameName = row.game_sessions.games.name;
-    if (normalizedGame && gameName !== normalizedGame) {
+    if (normalizedGame && normalizeGameFilter(gameName) !== normalizedGame) {
       continue;
     }
 
-    const key = `${row.player_address.toLowerCase()}:${gameName}`;
+    const key = `${row.player_address.toLowerCase()}:${normalizeGameFilter(gameName) ?? gameName}`;
     if (!bestByPlayerGame.has(key)) {
       bestByPlayerGame.set(key, row);
     }
@@ -164,14 +164,8 @@ async function listLeaderboardFromSessions(input: { game?: string }): Promise<Le
 }
 
 async function listLeaderboardFromSnapshot(input: { game?: string }): Promise<LeaderboardEntry[]> {
+  const normalizedGame = normalizeGameFilter(input.game);
   const rows = await prisma.player_game_leaderboard.findMany({
-    where: input.game
-      ? {
-          games: {
-            name: input.game,
-          },
-        }
-      : undefined,
     orderBy: [{ best_session_xp: "desc" }, { updated_at: "desc" }],
     include: {
       games: {
@@ -183,13 +177,15 @@ async function listLeaderboardFromSnapshot(input: { game?: string }): Promise<Le
   });
 
   return rankLeaderboardRows(
-    rows.map((row) => ({
-      playerAddress: row.player_address,
-      gameName: row.games.name,
-      score: row.best_session_xp,
-      bestSessionId: row.best_session_id,
-      updatedAt: row.updated_at.toISOString(),
-    })),
+    rows
+      .filter((row) => !normalizedGame || normalizeGameFilter(row.games.name) === normalizedGame)
+      .map((row) => ({
+        playerAddress: row.player_address,
+        gameName: row.games.name,
+        score: row.best_session_xp,
+        bestSessionId: row.best_session_id,
+        updatedAt: row.updated_at.toISOString(),
+      })),
   );
 }
 
@@ -811,6 +807,52 @@ export const zkMinesGameRouter = router({
 });
 
 export const leaderboardRouter = router({
+  games: publicProcedure.query(async () => {
+    const [sessionGames, snapshotGames] = await Promise.all([
+      prisma.games.findMany({
+        where: {
+          game_sessions: {
+            some: {
+              status: "FINISHED",
+              session_players: {
+                some: {
+                  xp: {
+                    gt: 0,
+                  },
+                },
+              },
+            },
+          },
+        },
+        orderBy: {
+          name: "asc",
+        },
+        select: {
+          name: true,
+        },
+      }),
+      prisma.games.findMany({
+        where: {
+          player_game_leaderboard: {
+            some: {
+              best_session_xp: {
+                gt: 0,
+              },
+            },
+          },
+        },
+        orderBy: {
+          name: "asc",
+        },
+        select: {
+          name: true,
+        },
+      }),
+    ]);
+    const names = new Set([...sessionGames, ...snapshotGames].map((game) => normalizeGameFilter(game.name) ?? game.name));
+
+    return Array.from(names).sort((left, right) => left.localeCompare(right));
+  }),
   record: publicProcedure
     .input(
       z.object({
