@@ -1,3 +1,4 @@
+
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { LogOut } from "lucide-react";
 import { useAccount, useChainId, useDisconnect } from "wagmi";
@@ -26,18 +27,18 @@ export default function Header() {
   return (
     <header className="pointer-events-none fixed inset-x-0 top-0 z-40 hidden items-center justify-between px-11 py-9 text-white sm:flex lg:px-[44px]">
       <div className="pointer-events-auto flex items-center gap-2 text-[#99ffa5]">
-        <span className="grid size-[11.5px] place-items-center rounded-full border border-[#99ffa5]/80 bg-[#99ffa5]/30">
-          <span className="size-[5.5px] rounded-full bg-[#99ffa5]" />
+        <span className="grid size-[16px] place-items-center rounded-full border border-[#99ffa5]/80 bg-[#99ffa5]/30">
+          <span className="size-[12px] rounded-full bg-[#99ffa5]" />
         </span>
         <span
           style={displayStyle}
-          className="text-xs font-medium tracking-normal lowercase text-[#99ffa5]"
+          className="text-lg font-medium tracking-normal lowercase text-[#99ffa5]"
         >
           verified on
         </span>
         <span
           style={displayStyle}
-          className="grid size-[19px] place-items-center rounded-[5px] bg-[#99ffa5] text-[10px] font-black leading-none text-[#041127]"
+          className="grid size-[24px] place-items-center rounded-[5px] bg-[#99ffa5] text-[10px] font-black leading-none text-[#041127]"
         >
           <img src='zkverify.png'/>
         </span>
