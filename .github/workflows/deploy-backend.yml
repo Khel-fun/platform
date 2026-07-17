@@ -12,7 +12,7 @@ on:
       - 'packages/env/**'
       - 'packages/config/**'
       - 'pnpm-lock.yaml'
-      - 'scripts/deploy.sh'
+      - 'scripts/deploy-backend.sh'
       - '.github/workflows/deploy-backend.yml'
 
 # Don't let two deploys run at once if you push twice quickly.
