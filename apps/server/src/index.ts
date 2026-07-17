@@ -32,6 +32,12 @@ app.get("/", (_req, res) => {
   res.status(200).send("OK");
 });
 
+// Health check for the deploy script (scripts/deploy-backend.sh) — must return
+// 2xx so `curl -fsS http://localhost:3000/health` succeeds post-deploy.
+app.get("/health", (_req, res) => {
+  res.status(200).json({ status: "ok", uptime: process.uptime() });
+});
+
 app.listen(3000, async () => {
   console.log("Server is running on http://localhost:3000");
 
