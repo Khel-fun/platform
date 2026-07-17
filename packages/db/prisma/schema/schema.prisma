@@ -30,12 +30,12 @@ model game_sessions {
   status                 session_status          @default(STARTED)
   created_at             DateTime                @default(now())
   updated_at             DateTime
-  card_wars_sessions     card_wars_sessions?
   games                  games                   @relation(fields: [game_id], references: [id])
   minesweeper_sessions   minesweeper_sessions?
   proofs                 proofs[]
   session_players        session_players[]
   speed_o_light_sessions speed_o_light_sessions?
+  card_wars_sessions     card_wars_sessions?
 
   @@index([game_id])
   @@index([game_id, status])

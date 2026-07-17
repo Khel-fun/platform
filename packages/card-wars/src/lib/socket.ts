@@ -1,26 +1,24 @@
-import { io, Socket } from 'socket.io-client';
+/// <reference path="../types/socket-io-client.d.ts" />
+
+import { io, type Socket } from "socket.io-client";
+
 import { env } from "@platform/env/web";
 
 let socket: Socket | null = null;
 
-export function getSocket(): Socket {
+export function getCardWarsBackendUrl() {
+  return env.VITE_CARD_WARS_BACKEND_URL ?? "http://localhost:4000";
+}
+
+export function getCardWarsSocket() {
   if (!socket) {
-    socket = io(env.VITE_CARD_WARS_BACKEND_URL ?? "http://localhost:4000", {
-      autoConnect: false,
+    socket = io(getCardWarsBackendUrl(), {
+      transports: ["websocket"],
       extraHeaders: {
-        'ngrok-skip-browser-warning': 'true',
+        "ngrok-skip-browser-warning": "true",
       },
     });
   }
+
   return socket;
-}
-
-export function connectSocket(): Socket {
-  const s = getSocket();
-  if (!s.connected) s.connect();
-  return s;
-}
-
-export function disconnectSocket() {
-  if (socket?.connected) socket.disconnect();
 }

@@ -1,219 +1,164 @@
-import { useEffect, useState } from "react";
+import { Link } from "@tanstack/react-router";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { useAccount } from "wagmi";
-import { useNavigate, Link } from "@tanstack/react-router";
-import { motion, AnimatePresence } from "framer-motion";
-import { useGameStore } from "@/store/gameStore";
-import { useSocket } from "@/hooks/useSocket";
-import GameBoard from "@/components/GameBoard";
-import { asset } from "@/lib/assets";
-import { env } from "@platform/env/web";
+
+import {
+  emptySlot,
+  gameRoomBgDesktop,
+  gameRoomBgMobile,
+  gameRoomShadersDesktop,
+  gameRoomShadersMobile,
+} from "@platform/ui/lib/assets";
+import { PlayingCard } from "@platform/ui/components/playing-card";
+
+import { CardWarsTitle, pillButtonClass, truncateAddress } from "../components/game-ui";
+import { getCardWarsSocket } from "../lib/socket";
+
+type CardValue = { rank: number; suit: string } | null;
+
+type CardFlipPayload = {
+  roundNumber: number;
+  player1Card?: CardValue;
+  player2Card?: CardValue;
+  winner?: string | null;
+  cardCounts?: Record<string, number>;
+};
+
+type GameStartPayload = {
+  gameId: string;
+  player1Id?: string;
+  player2Id?: string;
+  cardCounts?: Record<string, number>;
+};
+
+function readInitialGame(): GameStartPayload | null {
+  const raw = sessionStorage.getItem("cardWarsGame");
+  if (!raw) return null;
+
+  try {
+    return JSON.parse(raw) as GameStartPayload;
+  } catch {
+    return null;
+  }
+}
+
+function cardLabel(card: CardValue) {
+  if (!card) return "Waiting";
+  return `${card.rank} ${card.suit}`;
+}
 
 export default function CardWarsGame() {
   const { address } = useAccount();
-  const navigate = useNavigate();
-  const { status, gameWinner, playerId, roundNumber, cardCounts, gameId, reset } = useGameStore();
-  const [fairness, setFairness] = useState({
-    loading: false,
-    shuffleChecked: false,
-    dealChecked: false,
-  });
+  const [game, setGame] = useState<GameStartPayload | null>(() => readInitialGame());
+  const [round, setRound] = useState<CardFlipPayload | null>(null);
+  const [message, setMessage] = useState("Waiting for round...");
+  const [gameWinner, setGameWinner] = useState<string | null>(null);
 
-  useSocket(address);
-
-  useEffect(() => {
-    if (status === "idle") {
-      void navigate({ to: "/game/card-wars/lobby" });
-    }
-  }, [status, navigate]);
+  const players = useMemo(() => {
+    const ids = [game?.player1Id, game?.player2Id].filter(Boolean) as string[];
+    if (ids.length > 0) return ids;
+    return address ? [address] : [];
+  }, [address, game]);
 
   useEffect(() => {
-    if (status !== "game_over" || !gameId) return;
-
-    const controller = new AbortController();
-    const fetchFairness = async () => {
-      try {
-        setFairness((prev) => ({ ...prev, loading: true }));
-        const backendUrl = env.VITE_CARD_WARS_BACKEND_URL ?? "http://localhost:4000";
-        const response = await fetch(`${backendUrl}/api/games/${gameId}/fairness`, {
-          signal: controller.signal,
-          headers: { "ngrok-skip-browser-warning": "true" },
-        });
-        if (!response.ok) {
-          throw new Error(`Fairness API failed: ${response.status}`);
-        }
-        const data = await response.json();
-        setFairness({
-          loading: false,
-          shuffleChecked: Boolean(data?.fairness?.shuffle?.checked),
-          dealChecked: Boolean(data?.fairness?.deal?.checked),
-        });
-      } catch (error) {
-        if ((error as { name?: string })?.name === "AbortError") return;
-        setFairness((prev) => ({ ...prev, loading: false }));
-      }
+    const socket = getCardWarsSocket();
+    const onGameStart = (payload: GameStartPayload) => {
+      sessionStorage.setItem("cardWarsGame", JSON.stringify(payload));
+      setGame(payload);
+      setMessage("Game started");
+    };
+    const onCardFlip = (payload: CardFlipPayload) => {
+      setRound(payload);
+      setMessage(payload.winner ? `Round ${payload.roundNumber} winner decided` : `Round ${payload.roundNumber}`);
+    };
+    const onGameEnd = (payload: { winner?: string; cardCounts?: Record<string, number>; roundNumber?: number }) => {
+      setGameWinner(payload.winner ?? null);
+      if (payload.cardCounts && game) setGame({ ...game, cardCounts: payload.cardCounts });
+      setMessage("Game finished");
+    };
+    const onError = (error: { message?: string } | string) => {
+      setMessage(typeof error === "string" ? error : error.message ?? "Card Wars backend error");
     };
 
-    void fetchFairness();
-    return () => controller.abort();
-  }, [status, gameId]);
+    socket.on("game_start", onGameStart);
+    socket.on("card_flip", onCardFlip);
+    socket.on("game_end", onGameEnd);
+    socket.on("error", onError);
 
-  const isWinner = gameWinner === playerId;
-  const opponentId = Object.keys(cardCounts).find((id) => id !== playerId) ?? "";
-  const myScore = cardCounts[playerId ?? ""] ?? 0;
-  const opponentScore = cardCounts[opponentId] ?? 0;
+    return () => {
+      socket.off("game_start", onGameStart);
+      socket.off("card_flip", onCardFlip);
+      socket.off("game_end", onGameEnd);
+      socket.off("error", onError);
+    };
+  }, [game]);
 
-  if (status === "game_over") {
-    return (
-      <div
-        className="min-h-screen flex flex-col items-center justify-center px-4 gap-8 relative overflow-hidden bg-cover bg-center"
-        style={{ backgroundImage: `url(${asset("/bg.png")})` }}
-      >
-        <motion.div
-          className="text-center relative z-10"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ type: "spring", duration: 0.6 }}
-        >
-          <div className="text-8xl mb-4">{isWinner ? "🏆" : "💀"}</div>
-          <h1
-            className="text-6xl font-bold mb-2 font-display"
-            style={{
-              color: isWinner ? "#f59e0b" : "#ef4444",
-              textShadow: isWinner
-                ? "0 0 40px rgba(245,158,11,0.8), 0 2px 4px rgba(0,0,0,0.8)"
-                : "0 0 40px rgba(239,68,68,0.8), 0 2px 4px rgba(0,0,0,0.8)",
-            }}
-          >
-            {isWinner ? "VICTORY!" : "DEFEATED"}
-          </h1>
-          <p className="text-amber-300/70 text-lg mb-6">Battle ended after {roundNumber} rounds</p>
-
-          <div
-            className="flex gap-12 justify-center mb-8 px-8 py-4 rounded-xl"
-            style={{ background: "rgba(0,0,0,0.5)", border: "1px solid rgba(245,158,11,0.3)" }}
-          >
-            <div className="text-center">
-              <p className="text-amber-400/60 text-xs uppercase tracking-widest mb-1">Your Score</p>
-              <p className="text-4xl font-bold text-white font-display">{myScore}</p>
-            </div>
-            <div className="w-px bg-amber-900/50" />
-            <div className="text-center">
-              <p className="text-amber-400/60 text-xs uppercase tracking-widest mb-1">Opponent Score</p>
-              <p className="text-4xl font-bold text-white font-display">{opponentScore}</p>
-            </div>
-          </div>
-
-          <div
-            className="mb-8 mx-auto max-w-xl rounded-xl px-6 py-5 text-left"
-            style={{ background: "rgba(0,0,0,0.55)", border: "1px solid rgba(34,197,94,0.35)" }}
-          >
-            <p className="text-xs uppercase tracking-[0.2em] text-emerald-300/80 mb-3">Fairness Checks</p>
-            <div className="space-y-2 text-sm text-emerald-100">
-              <p>{fairness.shuffleChecked ? "✅" : "⬜"} Shuffle fairness</p>
-              <p>{fairness.dealChecked ? "✅" : "⬜"} Deal fairness</p>
-            </div>
-            <p className="mt-3 text-xs text-amber-200/80">
-              {fairness.loading
-                ? "Refreshing fairness checks..."
-                : "Final aggregation/on-chain attestation may complete later."}
-            </p>
-          </div>
-
-          <div className="flex gap-4 justify-center">
-            <Link to="/game/card-wars/lobby">
-              <motion.button
-                onClick={reset}
-                className="relative"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <img
-                  src={asset("/play.png")}
-                  alt="Play Again"
-                  width={200}
-                  height={60}
-                  className="object-contain"
-                />
-              </motion.button>
-            </Link>
-            <Link to="/game/card-wars">
-              <motion.button
-                onClick={reset}
-                className="relative"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <img
-                  src={asset("/home.png")}
-                  alt="Home"
-                  width={200}
-                  height={60}
-                  className="object-contain"
-                />
-              </motion.button>
-            </Link>
-          </div>
-        </motion.div>
-      </div>
-    );
-  }
+  const flipCard = () => {
+    if (!game?.gameId) return;
+    getCardWarsSocket().emit("flip_card", { gameId: game.gameId });
+    setMessage("Card submitted. Waiting for opponent...");
+  };
 
   return (
-    <div
-      className="min-h-screen relative overflow-hidden bg-cover bg-center"
-      style={{ backgroundImage: `url(${asset("/bg2.webp")})` }}
-    >
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: `
-          radial-gradient(ellipse at 15% 60%, rgba(251,146,60,0.25) 0%, transparent 40%),
-          radial-gradient(ellipse at 85% 60%, rgba(239,68,68,0.2) 0%, transparent 40%),
-          radial-gradient(ellipse at 50% 80%, rgba(245,158,11,0.1) 0%, transparent 50%)
-        `,
-        }}
-      />
-      <div
-        className="absolute bottom-0 left-0 right-0 h-40 pointer-events-none"
-        style={{ background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%)" }}
-      />
+    <div className="relative flex h-svh w-full flex-col overflow-hidden text-white">
+      <img src={gameRoomBgDesktop} alt="" aria-hidden className="absolute inset-0 hidden h-full w-full object-cover sm:block" />
+      <img src={gameRoomBgMobile} alt="" aria-hidden className="absolute inset-0 block h-full w-full object-cover sm:hidden" />
+      <img src={gameRoomShadersDesktop} alt="" aria-hidden className="absolute inset-0 hidden h-full w-full object-cover sm:block" />
+      <img src={gameRoomShadersMobile} alt="" aria-hidden className="absolute inset-0 block h-full w-full object-cover sm:hidden" />
 
-      <AnimatePresence mode="wait">
-        {(status === "active" || status === "war") && (
-          <motion.div
-            key="gameboard"
-            className="w-full h-full"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <GameBoard />
-          </motion.div>
-        )}
+      <Link
+        to="/game/card-wars"
+        className="absolute left-6 top-16 z-20 flex size-8 items-center justify-center rounded-full text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+      >
+        <ArrowLeft className="size-5" />
+      </Link>
 
-        {status === "queued" && (
-          <motion.div
-            key="queued"
-            className="flex flex-col items-center justify-center min-h-screen gap-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            <motion.div
-              className="text-7xl"
-              animate={{ rotate: 360 }}
-              transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
-            >
-              🃏
-            </motion.div>
-            <p
-              className="text-2xl font-bold font-display"
-              style={{ color: "#f59e0b", textShadow: "0 0 20px rgba(245,158,11,0.5)" }}
-            >
-              Seeking Opponent...
+      <main className="relative z-10 flex min-h-full flex-col items-center justify-center gap-8 px-6 text-center">
+        <CardWarsTitle className="text-6xl sm:text-7xl" />
+
+        {!game ? (
+          <div className="flex flex-col items-center gap-5">
+            <Loader2 className="size-10 animate-spin text-[#2AC390]" />
+            <p className="font-ui text-xl uppercase tracking-widest text-white/70">
+              Waiting for independent backend session...
             </p>
-          </motion.div>
+          </div>
+        ) : (
+          <>
+            <div className="grid w-full max-w-4xl grid-cols-1 gap-5 sm:grid-cols-2">
+              {players.map((player, index) => {
+                const card = (index === 0 ? round?.player1Card : round?.player2Card) ?? null;
+                const score = game.cardCounts?.[player] ?? 0;
+                const isWinner = gameWinner === player;
+                return (
+                  <section key={player} className="rounded-3xl border border-white/10 bg-black/45 p-6 backdrop-blur">
+                    <p className="font-ui text-sm uppercase tracking-widest text-white/50">
+                      {address?.toLowerCase() === player.toLowerCase() ? "You" : "Opponent"}
+                    </p>
+                    <p className="mt-2 font-ui text-lg text-white">{truncateAddress(player)}</p>
+                    <div className="mx-auto mt-6 flex h-44 w-32 items-center justify-center rounded-2xl bg-black/35">
+                      {card ? (
+                        <PlayingCard number={card.rank} />
+                      ) : (
+                        <img src={emptySlot} alt="" className="h-full w-full object-contain opacity-60" />
+                      )}
+                    </div>
+                    <p className="mt-4 font-ui text-xl text-white/80">{cardLabel(card)}</p>
+                    <p className="mt-2 font-ui text-sm uppercase tracking-widest text-white/50">Score {score}</p>
+                    {isWinner ? <p className="mt-3 font-ui text-[#2AC390]">Winner</p> : null}
+                  </section>
+                );
+              })}
+            </div>
+
+            <p className="font-ui text-xl uppercase tracking-widest text-white/70">{message}</p>
+            <button type="button" className={pillButtonClass} onClick={flipCard} disabled={Boolean(gameWinner)}>
+              flip card
+            </button>
+          </>
         )}
-      </AnimatePresence>
+      </main>
     </div>
   );
 }

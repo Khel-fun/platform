@@ -4,9 +4,6 @@
 @import "shadcn/tailwind.css";
 @source "../../../../apps/**/*.{ts,tsx}";
 @source "../**/*.{ts,tsx}";
-@source "../../../card-wars/**/*.{ts,tsx}";
-@source "../../../speed-o-light/**/*.{ts,tsx}";
-@source "../../../zkMines/**/*.{ts,tsx}";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -81,11 +78,13 @@
 
 @theme inline {
   --font-sans: "Inter Variable", sans-serif;
-  --color-war-bg: #0f0a1e;
-  --color-war-border: #78501a;
-  --color-war-card: #1a1025;
-  --color-war-accent: #7c3aed;
-  --font-display: Georgia, "Times New Roman", serif;
+
+  /* Card Wars design typography. */
+  --font-display: "Tomorrow", system-ui, sans-serif; /* CARD WARS titles */
+  --font-button: "Jersey 25", system-ui, sans-serif; /* CTAs */
+  --font-ui: "Vend Sans", system-ui, sans-serif; /* status / timer */
+  --font-pixel: "VT323", ui-monospace, monospace; /* scores / DUEL OVER */
+
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -136,4 +135,42 @@
   html {
     @apply font-sans;
   }
+}
+
+/* Indeterminate "verifying fairness" progress sweep for the game-over modal. */
+@keyframes cw-verify-sweep {
+  0% {
+    transform: translateX(-110%);
+  }
+  100% {
+    transform: translateX(360%);
+  }
+}
+
+.cw-verify-sweep {
+  animation: cw-verify-sweep 1.25s ease-in-out infinite;
+}
+
+/* Figma-style partial pill rim: small fading arcs at top-left and bottom-right. */
+.cw-pill-rim {
+  position: relative;
+}
+
+.cw-pill-rim::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  padding: 1px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent 12%) top / 100% 50% no-repeat,
+    linear-gradient(0deg, rgba(255, 255, 255, 0.12), transparent 12%) bottom / 100% 50% no-repeat,
+    linear-gradient(135deg, rgba(255, 255, 255, 0.44) 0%, rgba(255, 255, 255, 0.26) 14%, transparent 32%) top left / 62% 62% no-repeat,
+    linear-gradient(315deg, rgba(255, 255, 255, 0.44) 0%, rgba(255, 255, 255, 0.26) 14%, transparent 32%) bottom right / 62% 62% no-repeat;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
 }

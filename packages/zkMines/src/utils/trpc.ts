@@ -23,7 +23,7 @@ export const queryClient = new QueryClient({
 export const trpcClient = createTRPCClient<AppRouter>({
   links: [
     httpBatchLink({
-      url: `${env.VITE_SERVER_URL}/trpc`,
+      url: `${env.VITE_ZK_MINES_BACKEND_URL}/trpc`,
       headers: {
         "ngrok-skip-browser-warning": "true",
       },
@@ -35,3 +35,7 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
   client: trpcClient,
   queryClient,
 });
+
+const trpcRuntime = { queryClient, trpcClient, trpc } as const;
+
+export default trpcRuntime;

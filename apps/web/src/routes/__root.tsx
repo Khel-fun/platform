@@ -57,6 +57,10 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 function RootComponent() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isFullscreenGame = pathname.startsWith("/game/");
+  const showDevtools =
+    import.meta.env.DEV &&
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).has("debug");
 
   return (
     <>
@@ -67,17 +71,15 @@ function RootComponent() {
         </div>
       ) : (
         <WalletProviders>
-          <div className="grid h-svh grid-rows-[auto_1fr]">
+          <div className="h-svh overflow-auto">
             <Header />
-            <main className="min-h-0 overflow-auto">
-              <Outlet />
-            </main>
+            <Outlet />
           </div>
         </WalletProviders>
       )}
       <Toaster richColors />
-      {!isFullscreenGame && <TanStackRouterDevtools position="bottom-left" />}
-      {!isFullscreenGame && <ReactQueryDevtools position="bottom" buttonPosition="bottom-right" />}
+      {!isFullscreenGame && showDevtools && <TanStackRouterDevtools position="bottom-left" />}
+      {!isFullscreenGame && showDevtools && <ReactQueryDevtools position="bottom" buttonPosition="bottom-right" />}
     </>
   );
 }

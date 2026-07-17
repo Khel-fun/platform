@@ -15,21 +15,18 @@
     "build": "vite build",
     "serve": "vite preview",
     "start": "vite",
-    "check-types": "vite build && tsc --noEmit"
+    "check-types": "tsc --noEmit"
   },
   "dependencies": {
     "@platform/env": "workspace:*",
     "@platform/ui": "workspace:*",
-    "@rainbow-me/rainbowkit": "^2.1.2",
-    "@tanstack/react-query": "^5.90.12",
     "@tanstack/react-router": "^1.168.22",
-    "framer-motion": "^11.0.24",
+    "lucide-react": "^1.8.0",
     "react": "catalog:",
     "react-dom": "catalog:",
     "socket.io-client": "^4.7.4",
-    "viem": "^2.9.6",
-    "wagmi": "^2.5.20",
-    "zustand": "^4.5.2"
+    "sonner": "^2.0.7",
+    "wagmi": "^2.14.0"
   },
   "devDependencies": {
     "@platform/config": "workspace:*",

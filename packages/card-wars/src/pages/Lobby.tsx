@@ -1,156 +1,78 @@
-import { useEffect } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import { Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { motion } from "framer-motion";
-import { Link, useNavigate } from "@tanstack/react-router";
-import { useGameStore } from "@/store/gameStore";
-import { useSocket, emitJoinQueue } from "@/hooks/useSocket";
-import { asset } from "@/lib/assets";
 
-const FIRE = `
-  radial-gradient(ellipse at 15% 70%, rgba(251,146,60,0.2) 0%, transparent 45%),
-  radial-gradient(ellipse at 85% 70%, rgba(239,68,68,0.15) 0%, transparent 45%)
-`;
+import { homeBgDesktop, homeBgMobile } from "@platform/ui/lib/assets";
 
-const panelStyle = {
-  background: "rgba(0,0,0,0.55)",
-  border: "1px solid rgba(120,80,26,0.6)",
-  boxShadow: "0 8px 40px rgba(0,0,0,0.7), inset 0 1px 0 rgba(245,200,50,0.07)",
+import { CardWarsTitle, pillButtonClass } from "../components/game-ui";
+import { getCardWarsBackendUrl, getCardWarsSocket } from "../lib/socket";
+
+type GameStartPayload = {
+  gameId: string;
+  player1Id?: string;
+  player2Id?: string;
+  cardCounts?: Record<string, number>;
 };
 
 export default function CardWarsLobby() {
-  const { address, isConnected } = useAccount();
   const navigate = useNavigate();
-  const { status, reset } = useGameStore();
-
-  useSocket(address);
+  const { address, isConnected } = useAccount();
+  const [message, setMessage] = useState("Connecting to Card Wars backend...");
 
   useEffect(() => {
-    if (status === "active") {
-      void navigate({ to: "/game/card-wars/play" });
+    if (!isConnected || !address) {
+      void navigate({ to: "/game/card-wars" });
+      return;
     }
-  }, [status, navigate]);
 
-  const handleJoinQueue = () => {
-    if (!address) return;
-    reset();
-    emitJoinQueue(address);
-  };
+    const socket = getCardWarsSocket();
+    const onConnect = () => {
+      setMessage("Waiting for opponent...");
+      socket.emit("join_queue", { walletAddress: address });
+    };
+    const onQueueJoined = () => setMessage("Waiting for opponent...");
+    const onGameStart = (payload: GameStartPayload) => {
+      sessionStorage.setItem("cardWarsGame", JSON.stringify(payload));
+      void navigate({ to: "/game/card-wars/play" });
+    };
+    const onError = (error: { message?: string } | string) => {
+      setMessage(typeof error === "string" ? error : error.message ?? "Card Wars backend error");
+    };
 
-  if (!isConnected) {
-    return (
-      <div
-        className="min-h-screen flex flex-col items-center justify-center gap-6 relative bg-cover bg-center"
-        style={{ backgroundImage: `url(${asset("/bg.png")})` }}
-      >
-        <div className="absolute inset-0 pointer-events-none" style={{ background: FIRE }} />
-        <p
-          className="relative z-10 font-bold tracking-widest uppercase text-sm"
-          style={{ color: "rgba(245,200,80,0.6)" }}
-        >
-          Connect your wallet to enter the battle
-        </p>
-        <div className="relative z-10">
-          <ConnectButton />
-        </div>
-      </div>
-    );
-  }
+    socket.on("connect", onConnect);
+    socket.on("queue_joined", onQueueJoined);
+    socket.on("game_start", onGameStart);
+    socket.on("error", onError);
+
+    if (socket.connected) onConnect();
+    else socket.connect();
+
+    return () => {
+      socket.off("connect", onConnect);
+      socket.off("queue_joined", onQueueJoined);
+      socket.off("game_start", onGameStart);
+      socket.off("error", onError);
+    };
+  }, [address, isConnected, navigate]);
 
   return (
-    <div
-      className="min-h-screen flex flex-col items-center justify-center px-4 gap-8 relative overflow-hidden bg-cover bg-center"
-      style={{ backgroundImage: `url(${asset("/bg.png")})` }}
-    >
-      <div className="absolute inset-0 pointer-events-none" style={{ background: FIRE }} />
-
-      <Link to="/game/card-wars" className="absolute top-5 left-6 z-20">
-        <motion.button className="relative" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-          <img src={asset("/back.png")} alt="Back" width={150} height={50} className="object-contain" />
-        </motion.button>
-      </Link>
-
-      <motion.div
-        className="relative z-10 text-center"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <h1
-          className="font-black tracking-[0.15em] leading-none mb-1"
-          style={{
-            fontSize: "clamp(2.5rem, 8vw, 4rem)",
-            color: "#f5c842",
-            textShadow: "0 0 30px rgba(245,158,11,0.6), 0 3px 6px rgba(0,0,0,0.9)",
-            fontFamily: "Georgia, serif",
-          }}
-        >
-          LOBBY
-        </h1>
-        <p className="text-xs font-mono" style={{ color: "rgba(255,255,255,0.95)" }}>
-          {address?.slice(0, 6)}...{address?.slice(-4)}
+    <div className="relative flex h-svh w-full flex-col items-center justify-center overflow-hidden">
+      <img src={homeBgDesktop} alt="" aria-hidden className="absolute inset-0 hidden h-full w-full object-cover sm:block" />
+      <img src={homeBgMobile} alt="" aria-hidden className="absolute inset-0 block h-full w-full object-cover sm:hidden" />
+      <div className="relative z-10 flex max-w-xl flex-col items-center gap-8 px-6 text-center">
+        <CardWarsTitle className="text-7xl sm:text-8xl" />
+        <Loader2 className="size-10 animate-spin text-[#2AC390]" />
+        <p className="font-ui text-[22px] font-semibold uppercase tracking-widest text-white/80">
+          {message}
         </p>
-      </motion.div>
-
-      <motion.div
-        className="relative z-10 rounded-2xl p-8 w-full max-w-md flex flex-col gap-6"
-        style={panelStyle}
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.1 }}
-      >
-        {status === "idle" && (
-          <motion.button
-            onClick={handleJoinQueue}
-            className="w-full flex items-center justify-center"
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-          >
-            <img
-              src={asset("/find.png")}
-              alt="Find Match"
-              width={300}
-              height={80}
-              className="object-contain"
-            />
-          </motion.button>
-        )}
-
-        {status === "queued" && (
-          <div className="flex flex-col items-center gap-5 py-2">
-            <div className="flex gap-3">
-              {[0, 1, 2].map((i) => (
-                <motion.div
-                  key={i}
-                  className="w-3 h-3 rounded-full"
-                  style={{ background: "#b8860b" }}
-                  animate={{ y: [0, -10, 0], opacity: [0.4, 1, 0.4] }}
-                  transition={{ repeat: Infinity, duration: 0.9, delay: i * 0.18 }}
-                />
-              ))}
-            </div>
-            <p
-              className="font-bold tracking-widest text-sm uppercase"
-              style={{ color: "rgba(245,200,80,0.7)" }}
-            >
-              Seeking opponent...
-            </p>
-            <button
-              onClick={() => reset()}
-              className="text-xs uppercase tracking-widest underline"
-              style={{ color: "rgba(255,255,255,0.25)" }}
-            >
-              Cancel
-            </button>
-          </div>
-        )}
-      </motion.div>
-
-      <p
-        className="relative z-10 text-xs text-center max-w-sm"
-        style={{ color: "rgba(255,255,255,0.6)" }}
-      >
-        Games are provably fair — deck hash published before cards are dealt.
-      </p>
+        <p className="max-w-md font-ui text-sm leading-6 text-white/55">
+          Using independent backend: {getCardWarsBackendUrl()}
+        </p>
+        <button type="button" className={pillButtonClass} onClick={() => navigate({ to: "/game/card-wars" })}>
+          cancel
+        </button>
+      </div>
     </div>
   );
 }

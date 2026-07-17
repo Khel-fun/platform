@@ -2,8 +2,8 @@ import { Toaster } from "@speed-o-light/ui/components/sonner";
 import type { QueryClient } from "@tanstack/react-query";
 import { HeadContent, Outlet, createRootRouteWithContext } from "@tanstack/react-router";
 
-import { ThemeProvider } from "@/components/theme-provider";
-import type { trpc } from "@/utils/trpc";
+import { ThemeProvider } from "../components/theme-provider";
+import type { trpc } from "../utils/trpc";
 
 import "../index.css";
 
