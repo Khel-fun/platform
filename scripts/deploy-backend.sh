@@ -15,7 +15,8 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 
 export PNPM_HOME="$HOME/.local/share/pnpm"          # pnpm global bin dir
-case ":$PATH:" in *":$PNPM_HOME:"*) ;; *) export PATH="$PNPM_HOME:$PATH" ;; esac
+# global binaries actually live in $PNPM_HOME/bin — add both to be layout-proof
+export PATH="$PNPM_HOME:$PNPM_HOME/bin:$PATH"
 
 corepack enable >/dev/null 2>&1 || true             # ensures pnpm is available
 
