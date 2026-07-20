@@ -1,9 +1,5 @@
-import {
-  useConnect,
-  useAccount,
-  useConnectors,
-  useSwitchChain,
-} from "wagmi";
+import type { Connector } from "wagmi";
+import { useAccount, useConnect, useConnectors, useSwitchChain } from "wagmi";
 import { AlertTriangle, Wallet } from "lucide-react";
 import { toast } from "sonner";
 
@@ -12,29 +8,75 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@platform/ui/components/dropdown-menu";
 
-import { pillButtonClass } from "../components/game-ui";
+import { pillButtonClass } from "./game-ui";
+import {
+  CoinbaseIcon,
+  MetaMaskIcon,
+  PhantomIcon,
+  RainbowIcon,
+  WalletConnectIcon,
+} from "./wallet-icons";
 import { defaultChainId, isSupportedChain, walletErrorMessage } from "../utils/wagmi";
 
 const walletMenuContentClass =
-  "min-w-[250px] border border-white/10 bg-[#151515] p-0 text-white " +
-  "shadow-[0_18px_44px_rgba(0,0,0,0.45)] ring-0";
-
-const walletMenuLabelClass =
-  "px-2.5 py-2 font-ui text-[12px] leading-5 text-white/70";
+  "cw-wallet-menu overflow-hidden !rounded-[40px] px-6 py-8 text-white !ring-0";
 
 const walletMenuItemClass =
-  "cursor-pointer gap-2.5 px-2.5 py-2 font-ui text-[13px] leading-5 text-white " +
-  "focus:bg-white/8 focus:text-white";
+  "cursor-pointer gap-4 rounded-none px-0 py-0 font-ui text-[18px] leading-[22px] text-white " +
+  "focus:bg-transparent focus:text-white hover:bg-transparent data-[highlighted]:bg-transparent";
+
+type WalletIcon = typeof MetaMaskIcon;
+
+function walletSortRank(connector: Connector): number {
+  if (connector.id === "walletConnect") return 3;
+  if (connector.id === "coinbaseWalletSDK") return 2;
+  return 1;
+}
+
+function getWalletFallbackIcon(connector: Connector): WalletIcon | null {
+  const haystack = `${connector.id} ${connector.name}`.toLowerCase();
+
+  if (haystack.includes("metamask")) return MetaMaskIcon;
+  if (haystack.includes("rainbow")) return RainbowIcon;
+  if (haystack.includes("phantom")) return PhantomIcon;
+  if (haystack.includes("coinbase")) return CoinbaseIcon;
+  if (haystack.includes("walletconnect")) return WalletConnectIcon;
+
+  return null;
+}
+
+function WalletConnectorIcon({ connector }: { connector: Connector }) {
+  const FallbackIcon = getWalletFallbackIcon(connector);
+
+  if (connector.icon) {
+    return (
+      <img
+        src={connector.icon}
+        alt=""
+        className="size-5 shrink-0 rounded-[4px]"
+      />
+    );
+  }
+
+  if (FallbackIcon) {
+    return <FallbackIcon className="size-5 shrink-0 rounded-[4px]" />;
+  }
+
+  return <Wallet className="size-5 shrink-0 text-white/80" />;
+}
 
 export function ConnectWallet() {
   const { address, isConnected, chainId } = useAccount();
   const connectors = useConnectors();
   const { connect, isPending: isConnecting } = useConnect();
   const { switchChain, isPending: isSwitching } = useSwitchChain();
+
+  const walletOptions = [...connectors].sort(
+    (a, b) => walletSortRank(a) - walletSortRank(b) || a.name.localeCompare(b.name),
+  );
 
   // 1. Connected to an unsupported network — prompt a switch before anything else.
   if (isConnected && !isSupportedChain(chainId)) {
@@ -63,12 +105,12 @@ export function ConnectWallet() {
 
   // 2. Connected on a supported network — show the account + disconnect menu.
   if (isConnected && address) {
-    // Return null here because `index.tsx` handles rendering the address and logout 
+    // Return null here because `Home` handles rendering the address and logout
     // icon when the user is connected.
     return null;
   }
 
-  // 3. Disconnected — let the player pick a wallet (browser or mobile).
+  // 3. Disconnected — list installed browser wallets (EIP-6963) plus Coinbase + WC.
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -76,28 +118,26 @@ export function ConnectWallet() {
       >
         {isConnecting ? "Connecting…" : "connect wallet"}
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className={walletMenuContentClass}>
-        <DropdownMenuGroup>
-          <DropdownMenuLabel className={walletMenuLabelClass}>
-            Choose a wallet
-          </DropdownMenuLabel>
-          {connectors.map((c) => (
+      <DropdownMenuContent
+        align="center"
+        side="top"
+        sideOffset={12}
+        className={walletMenuContentClass}
+      >
+        <DropdownMenuGroup className="relative z-10 flex flex-col gap-5">
+          {walletOptions.map((connector) => (
             <DropdownMenuItem
-              key={c.uid}
+              key={connector.uid}
               className={walletMenuItemClass}
               onClick={() =>
                 connect(
-                  { connector: c },
+                  { connector },
                   { onError: (error) => toast.error(walletErrorMessage(error)) },
                 )
               }
             >
-              {c.icon ? (
-                <img src={c.icon} alt="" className="size-4 rounded-sm" />
-              ) : (
-                <Wallet />
-              )}
-              {c.name}
+              <WalletConnectorIcon connector={connector} />
+              {connector.name}
             </DropdownMenuItem>
           ))}
         </DropdownMenuGroup>

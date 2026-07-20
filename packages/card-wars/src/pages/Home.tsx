@@ -1,4 +1,6 @@
-import { Link } from "@tanstack/react-router";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { LogOut } from "lucide-react";
 import { useAccount, useDisconnect } from "wagmi";
 
@@ -10,13 +12,53 @@ import {
   pillButtonClass,
   truncateAddress,
 } from "../components/game-ui";
+import { trpc } from "../utils/trpc";
 import { isSupportedChain } from "../utils/wagmi";
 
-
 export default function CardWarsHome() {
+  const navigate = useNavigate();
   const { address, isConnected, chainId } = useAccount();
   const { disconnect } = useDisconnect();
   const ready = isConnected && isSupportedChain(chainId);
+
+  const toGame = (sessionId: string) =>
+    navigate({ to: "/game/card-wars/$sessionId", params: { sessionId } });
+
+  // PLAY enqueues the player; if no opponent is waiting we poll until one is.
+  const join = useMutation({
+    ...trpc.cardWars.joinQueue.mutationOptions(),
+    onSuccess: (res) => {
+      if (res.status === "matched") toGame(res.sessionId);
+    },
+  });
+  const resetJoin = join.reset;
+
+  const waiting = join.data?.status === "waiting";
+  const searching = join.isPending || waiting;
+
+  const poll = useQuery({
+    ...trpc.cardWars.pollMatch.queryOptions(),
+    enabled: waiting,
+    refetchInterval: 1500,
+  });
+
+  useEffect(() => {
+    if (poll.data?.status === "matched") toGame(poll.data.sessionId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [poll.data]);
+
+  const [safeToPlay, setSafeToPlay] = useState(false);
+  useEffect(() => {
+    if (ready) {
+      const timer = setTimeout(() => setSafeToPlay(true), 400);
+      return () => clearTimeout(timer);
+    }
+
+    setSafeToPlay(false);
+    // If the user disconnects or switches to a wrong network,
+    // clear any leftover "waiting" state from the previous queue attempt.
+    resetJoin();
+  }, [ready, resetJoin]);
 
   return (
     <div className="relative flex h-svh w-full flex-col items-center justify-center overflow-hidden">
@@ -58,9 +100,30 @@ export default function CardWarsHome() {
             <ConnectWallet />
           </div>
         ) : (
-          <Link to="/game/card-wars/lobby" className={pillButtonClass}>
-            PLAY
-          </Link>
+          <>
+            {searching ? (
+              <p className="pt-8 font-ui text-[20px] font-semibold uppercase tracking-widest text-white/70">
+                fetching opponent ...
+              </p>
+            ) : (
+              <button
+                type="button"
+                className={pillButtonClass}
+                disabled={join.isPending || !safeToPlay}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (safeToPlay) join.mutate();
+                }}
+              >
+                PLAY
+              </button>
+            )}
+          </>
+        )}
+
+        {join.error && !searching && (
+          <p className="font-ui text-sm text-red-400">{join.error.message}</p>
         )}
       </div>
     </div>

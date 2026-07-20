@@ -5,7 +5,9 @@ export const env = createEnv({
   clientPrefix: "VITE_",
   client: {
     VITE_SERVER_URL: z.url(),
-    VITE_CARD_WARS_BACKEND_URL: z.url().optional(),
+    VITE_CARD_WARS_BACKEND_URL: z.url(),
+    VITE_CARD_WARS_CHAIN_ID: z.coerce.number().optional(),
+    VITE_CARD_WARS_CONTRACT_ADDRESS: z.string().optional(),
     VITE_WALLETCONNECT_PROJECT_ID: z.string().optional(),
     VITE_ZK_MINES_BACKEND_URL: z.url(),
     VITE_ZK_MINES_CONTRACT_ADDRESS: z.string().optional(),

@@ -13,8 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as GameZkMinesRouteImport } from './routes/game/zk-mines'
 import { Route as GameSpeedOLightRouteImport } from './routes/game/speed-o-light'
 import { Route as GameCardWarsIndexRouteImport } from './routes/game/card-wars/index'
-import { Route as GameCardWarsPlayRouteImport } from './routes/game/card-wars/play'
-import { Route as GameCardWarsLobbyRouteImport } from './routes/game/card-wars/lobby'
+import { Route as GameCardWarsSessionIdRouteImport } from './routes/game/card-wars/$sessionId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -36,14 +35,9 @@ const GameCardWarsIndexRoute = GameCardWarsIndexRouteImport.update({
   path: '/game/card-wars/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GameCardWarsPlayRoute = GameCardWarsPlayRouteImport.update({
-  id: '/game/card-wars/play',
-  path: '/game/card-wars/play',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GameCardWarsLobbyRoute = GameCardWarsLobbyRouteImport.update({
-  id: '/game/card-wars/lobby',
-  path: '/game/card-wars/lobby',
+const GameCardWarsSessionIdRoute = GameCardWarsSessionIdRouteImport.update({
+  id: '/game/card-wars/$sessionId',
+  path: '/game/card-wars/$sessionId',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -51,16 +45,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/game/speed-o-light': typeof GameSpeedOLightRoute
   '/game/zk-mines': typeof GameZkMinesRoute
-  '/game/card-wars/lobby': typeof GameCardWarsLobbyRoute
-  '/game/card-wars/play': typeof GameCardWarsPlayRoute
+  '/game/card-wars/$sessionId': typeof GameCardWarsSessionIdRoute
   '/game/card-wars/': typeof GameCardWarsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/game/speed-o-light': typeof GameSpeedOLightRoute
   '/game/zk-mines': typeof GameZkMinesRoute
-  '/game/card-wars/lobby': typeof GameCardWarsLobbyRoute
-  '/game/card-wars/play': typeof GameCardWarsPlayRoute
+  '/game/card-wars/$sessionId': typeof GameCardWarsSessionIdRoute
   '/game/card-wars': typeof GameCardWarsIndexRoute
 }
 export interface FileRoutesById {
@@ -68,8 +60,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/game/speed-o-light': typeof GameSpeedOLightRoute
   '/game/zk-mines': typeof GameZkMinesRoute
-  '/game/card-wars/lobby': typeof GameCardWarsLobbyRoute
-  '/game/card-wars/play': typeof GameCardWarsPlayRoute
+  '/game/card-wars/$sessionId': typeof GameCardWarsSessionIdRoute
   '/game/card-wars/': typeof GameCardWarsIndexRoute
 }
 export interface FileRouteTypes {
@@ -78,24 +69,21 @@ export interface FileRouteTypes {
     | '/'
     | '/game/speed-o-light'
     | '/game/zk-mines'
-    | '/game/card-wars/lobby'
-    | '/game/card-wars/play'
+    | '/game/card-wars/$sessionId'
     | '/game/card-wars/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/game/speed-o-light'
     | '/game/zk-mines'
-    | '/game/card-wars/lobby'
-    | '/game/card-wars/play'
+    | '/game/card-wars/$sessionId'
     | '/game/card-wars'
   id:
     | '__root__'
     | '/'
     | '/game/speed-o-light'
     | '/game/zk-mines'
-    | '/game/card-wars/lobby'
-    | '/game/card-wars/play'
+    | '/game/card-wars/$sessionId'
     | '/game/card-wars/'
   fileRoutesById: FileRoutesById
 }
@@ -103,8 +91,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   GameSpeedOLightRoute: typeof GameSpeedOLightRoute
   GameZkMinesRoute: typeof GameZkMinesRoute
-  GameCardWarsLobbyRoute: typeof GameCardWarsLobbyRoute
-  GameCardWarsPlayRoute: typeof GameCardWarsPlayRoute
+  GameCardWarsSessionIdRoute: typeof GameCardWarsSessionIdRoute
   GameCardWarsIndexRoute: typeof GameCardWarsIndexRoute
 }
 
@@ -138,18 +125,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GameCardWarsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/game/card-wars/play': {
-      id: '/game/card-wars/play'
-      path: '/game/card-wars/play'
-      fullPath: '/game/card-wars/play'
-      preLoaderRoute: typeof GameCardWarsPlayRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/game/card-wars/lobby': {
-      id: '/game/card-wars/lobby'
-      path: '/game/card-wars/lobby'
-      fullPath: '/game/card-wars/lobby'
-      preLoaderRoute: typeof GameCardWarsLobbyRouteImport
+    '/game/card-wars/$sessionId': {
+      id: '/game/card-wars/$sessionId'
+      path: '/game/card-wars/$sessionId'
+      fullPath: '/game/card-wars/$sessionId'
+      preLoaderRoute: typeof GameCardWarsSessionIdRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -159,8 +139,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   GameSpeedOLightRoute: GameSpeedOLightRoute,
   GameZkMinesRoute: GameZkMinesRoute,
-  GameCardWarsLobbyRoute: GameCardWarsLobbyRoute,
-  GameCardWarsPlayRoute: GameCardWarsPlayRoute,
+  GameCardWarsSessionIdRoute: GameCardWarsSessionIdRoute,
   GameCardWarsIndexRoute: GameCardWarsIndexRoute,
 }
 export const routeTree = rootRouteImport
