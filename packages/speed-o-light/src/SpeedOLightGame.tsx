@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Bomb, CircleUserRound, ExternalLink, Loader2, Trophy, Zap } from "lucide-react";
+import { Bomb, CircleUserRound, Loader2, Trophy, Zap } from "lucide-react";
 import { useWallet } from "./hooks/useWallet";
 import { shortenAddress } from "./lib/shorten-address";
-import { publishSettlementOnChain } from "./lib/publish-settlement";
 import trpcRuntime from "./utils/trpc";
 
 const { trpc } = trpcRuntime;
@@ -30,67 +29,27 @@ type PendingSubmit = {
   tapSequence: Tap[];
   dangerTap: Tap;
 };
-type ChainPublishNotice = {
-  tone: "cancelled" | "error";
-  message: string;
+export type SpeedOLightWalletBridge = {
+  address?: `0x${string}`;
+  isConnecting?: boolean;
+  error?: string | null;
+  connect?: () => void | Promise<void>;
+  disconnect?: () => void;
 };
 
 const TERMINAL_STATUSES = ["FINALIZED", "AGGREGATED", "FAILED"];
 
-function walletErrorMessage(err: unknown): string {
-  const details: string[] = [];
-  let current: unknown = err;
-
-  while (current && typeof current === "object") {
-    const o = current as { code?: unknown; message?: unknown; shortMessage?: unknown; cause?: unknown };
-    if (typeof o.code === "number") details.push(String(o.code));
-    if (typeof o.shortMessage === "string") details.push(o.shortMessage);
-    if (typeof o.message === "string") details.push(o.message);
-    current = o.cause;
-  }
-
-  if (err instanceof Error && err.message) details.push(err.message);
-  return details.join(" ");
-}
-
-function normalizeChainPublishError(err: unknown): ChainPublishNotice {
-  const message = walletErrorMessage(err);
-
-  if (
-    /\b4001\b/.test(message) ||
-    /user rejected/i.test(message) ||
-    /rejected the request/i.test(message) ||
-    /request rejected/i.test(message) ||
-    /denied transaction signature/i.test(message)
-  ) {
-    return {
-      tone: "cancelled",
-      message: "Transaction signing was cancelled.",
-    };
-  }
-
-  return {
-    tone: "error",
-    message: err instanceof Error && err.message ? err.message : "On-chain publish failed.",
-  };
-}
-
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
-export function SpeedOLightGame() {
-  const wallet = useWallet();
+export function SpeedOLightGame({ walletBridge }: { walletBridge?: SpeedOLightWalletBridge }) {
+  const wallet = useWallet(walletBridge);
   const [gameState, setGameState] = useState<GameState>("IDLE");
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(SESSION_LIMIT);
   const [activeLights, setActiveLights] = useState<ActiveLight[]>([]);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isWinner, setIsWinner] = useState(false);
-  const [chainTxHash, setChainTxHash] = useState<`0x${string}` | null>(null);
-  const [chainPublishNotice, setChainPublishNotice] = useState<ChainPublishNotice | null>(null);
-  const [isPublishing, setIsPublishing] = useState(false);
-  /** Wallet address this session was started with (must match for on-chain publish). */
-  const [sessionPlayerAddress, setSessionPlayerAddress] = useState<string | null>(null);
   const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false);
 
   // Refs hold mutable game state so the RAF loop is always fresh
@@ -107,11 +66,11 @@ export function SpeedOLightGame() {
   const playerAddrRef = useRef("");
   const pendingSubmitRef = useRef<PendingSubmit | null>(null);
 
-  const newGameMutation = useMutation(trpc.newGame.mutationOptions());
-  const submitMutation = useMutation(trpc.submitSession.mutationOptions());
+  const newGameMutation = useMutation(trpc.speedOLight.newGame.mutationOptions());
+  const submitMutation = useMutation(trpc.speedOLight.submitSession.mutationOptions());
 
   const statusQuery = useQuery({
-    ...trpc.getSessionStatus.queryOptions({ sessionId: sessionId! }),
+    ...trpc.speedOLight.getSessionStatus.queryOptions({ sessionId: sessionId! }),
     enabled: gameState === "VERIFYING" && !!sessionId,
     refetchInterval: (query) => {
       const status = query.state.data?.verificationStatus;
@@ -176,10 +135,12 @@ export function SpeedOLightGame() {
     if (now >= nextSpawnRef.current && spawnIndexRef.current < 136) {
       const slot = spawnIndexRef.current++;
       const tile = gridSeqRef.current[slot];
-      alive = [
-        ...alive,
-        { slotIndex: slot, tileIndex: tile.index, isDanger: tile.is_danger, expiresAt: now + GLOW_DURATION },
-      ];
+      if (tile) {
+        alive = [
+          ...alive,
+          { slotIndex: slot, tileIndex: tile.index, isDanger: tile.is_danger, expiresAt: now + GLOW_DURATION },
+        ];
+      }
       nextSpawnRef.current = now + SPAWN_FREQ;
     }
 
@@ -217,10 +178,7 @@ export function SpeedOLightGame() {
     if (gameLoopRef.current) cancelAnimationFrame(gameLoopRef.current);
     playerAddrRef.current = addr;
     submitMutation.reset();
-    setChainTxHash(null);
-    setChainPublishNotice(null);
     setSessionId(null);
-    setSessionPlayerAddress(null);
     setIsWinner(false);
     setScore(0);
     setTimeLeft(SESSION_LIMIT);
@@ -237,10 +195,6 @@ export function SpeedOLightGame() {
       { playerAddress: addr },
       {
         onSuccess: ({ sessionId: id, gridSequence }) => {
-          setChainTxHash(null);
-          setChainPublishNotice(null);
-          setSessionPlayerAddress(addr);
-
           const now = Date.now();
           startTimeRef.current = now;
           nextSpawnRef.current = now;
@@ -265,9 +219,6 @@ export function SpeedOLightGame() {
     setScore(0);
     setTimeLeft(SESSION_LIMIT);
     setSessionId(null);
-    setChainTxHash(null);
-    setChainPublishNotice(null);
-    setSessionPlayerAddress(null);
     submitMutation.reset();
   }, [submitMutation]);
 
@@ -316,26 +267,10 @@ export function SpeedOLightGame() {
   const resultState = gameState === "FINISHED" || gameState === "VERIFYING";
   const proofReady = gameState === "VERIFYING" && verificationSettled;
 
-  const settlement =
-    submitMutation.data?.settlement ?? statusQuery.data?.settlement ?? null;
-
-  const publishToChain = useCallback(async () => {
-    if (!settlement || !wallet.address) return;
-    setChainPublishNotice(null);
-    setIsPublishing(true);
-    try {
-      const hash = await publishSettlementOnChain(settlement, wallet.address as `0x${string}`);
-      setChainTxHash(hash);
-    } catch (e) {
-      setChainPublishNotice(normalizeChainPublishError(e));
-    } finally {
-      setIsPublishing(false);
-    }
-  }, [settlement, wallet.address]);
   return (
-    <main className="min-h-svh overflow-hidden bg-[#020202] text-white font-sans">
-      <div className="flex min-h-svh w-full flex-col px-4 py-0 sm:px-6 sm:py-6 lg:px-[64px] lg:py-[64px]">
-        <header className="-mx-4 flex h-[224px] shrink-0 flex-col items-center gap-[92px] bg-[#020202] px-4 pt-[60px] sm:mx-0 sm:h-auto sm:flex-row sm:items-start sm:justify-between sm:gap-3 sm:bg-transparent sm:p-0">
+    <main className="min-h-svh bg-[#020202] text-white font-sans">
+      <div className="flex min-h-svh w-full flex-col px-4 py-4 sm:px-6 sm:py-6 lg:px-[64px] lg:py-[64px]">
+        <header className="flex shrink-0 flex-col items-center gap-4 bg-[#020202] pt-6 sm:h-auto sm:flex-row sm:items-start sm:justify-between sm:gap-3 sm:bg-transparent sm:p-0">
           <div className="max-w-full text-center text-[38px] font-black italic leading-none text-white drop-shadow-[0_4px_9px_rgba(255,255,255,0.38)] sm:text-left sm:text-[22px] lg:mt-2">
             SPEED-O-LIGHT
           </div>
@@ -397,7 +332,7 @@ export function SpeedOLightGame() {
           </div>
         </header>
 
-        <section className="mx-auto flex w-full max-w-[480px] flex-1 flex-col justify-start gap-2 pt-5 sm:justify-center sm:gap-3 sm:py-8 lg:-translate-y-[2px] lg:py-0">
+        <section className="mx-auto flex w-full max-w-[480px] flex-1 flex-col justify-center gap-2 pt-4 sm:gap-3 sm:py-8 lg:-translate-y-[2px] lg:py-0">
           <div className="grid grid-cols-2 items-end gap-3">
             <div>
               <div className="mb-1 text-[10px] font-medium uppercase tracking-[0.08em] text-white/65 sm:text-[11px]">
@@ -436,7 +371,7 @@ export function SpeedOLightGame() {
             />
           </div>
 
-          <div className="relative mx-auto mt-6 overflow-visible sm:mt-2">
+          <div className="relative mx-auto mt-4 overflow-visible sm:mt-2">
             <div className="grid grid-cols-5 gap-2.5 rounded-[2rem] border-[3px] border-neutral-800 bg-neutral-900 p-3 shadow-2xl sm:gap-3 sm:rounded-[2.5rem] sm:border-4 sm:p-4">
               {[...Array(GRID_SIZE)].map((_, cellIdx) => {
                 const light = activeLights.find((l) => l.tileIndex === cellIdx);
@@ -512,7 +447,7 @@ export function SpeedOLightGame() {
                       <button
                         type="button"
                         onClick={startNewGame}
-                        disabled={newGameMutation.isPending || isPublishing}
+                        disabled={newGameMutation.isPending}
                         className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#4c00ff] px-8 text-xs font-black uppercase text-white shadow-[0_0_30px_rgba(76,0,255,0.45)] transition-transform hover:scale-[1.02] hover:bg-[#5d16ff] active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
                       >
                         {newGameMutation.isPending ? (
@@ -593,48 +528,6 @@ export function SpeedOLightGame() {
                           {verificationFailed ? "Proofs Need Review." : "Proofs Verified."}
                         </p>
 
-                        {settlement && !chainTxHash && (
-                          <button
-                            type="button"
-                            onClick={() => void publishToChain()}
-                            disabled={
-                              isPublishing ||
-                              !wallet.address ||
-                              !sessionPlayerAddress ||
-                              wallet.address.toLowerCase() !== sessionPlayerAddress.toLowerCase()
-                            }
-                            className="inline-flex min-h-9 items-center justify-center rounded-full bg-linear-to-r from-[#c43bf2] to-[#ff7a35] px-5 text-[11px] font-black uppercase tracking-[0.12em] text-white shadow-[0_0_20px_rgba(196,59,242,0.22)] disabled:cursor-not-allowed disabled:opacity-45 sm:min-h-12 sm:px-7 sm:text-[15px] lg:min-w-[252px]"
-                          >
-                            {isPublishing ? "Confirm in wallet..." : "Publish XP Onchain"}
-                          </button>
-                        )}
-
-                        {chainTxHash && (
-                          <a
-                            href={`https://basescan.org/tx/${chainTxHash}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex items-center justify-center gap-2 px-1 py-2 text-[11px] font-black uppercase tracking-[0.12em] transition-opacity hover:opacity-80 sm:text-[15px]"
-                          >
-                            <ExternalLink size={12} className="text-[#ff7a35]" />
-                            <span className="bg-linear-to-r from-[#c43bf2] to-[#ff7a35] bg-clip-text text-transparent">
-                              View Onchain
-                            </span>
-                          </a>
-                        )}
-
-                        {chainPublishNotice && (
-                          <p
-                            className={`max-w-[240px] rounded-[8px] border px-3 py-2 text-center text-[10px] font-medium leading-snug ${
-                              chainPublishNotice.tone === "cancelled"
-                                ? "border-amber-300/25 bg-amber-300/8 text-amber-200"
-                                : "border-red-400/25 bg-red-500/8 text-red-200"
-                            }`}
-                          >
-                            {chainPublishNotice.message}
-                          </p>
-                        )}
-
                       </div>
                     ) : (
                       <div className="flex w-full max-w-[290px] flex-col items-center">
@@ -659,7 +552,7 @@ export function SpeedOLightGame() {
             <button
               type="button"
               onClick={startNewGame}
-              disabled={!wallet.address || newGameMutation.isPending || isPublishing}
+              disabled={!wallet.address || newGameMutation.isPending}
               className="mx-auto mt-3 inline-flex min-h-9 items-center justify-center rounded-full border border-[#7d50ff] px-6 text-[11px] font-black uppercase tracking-[0.12em] text-white transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-45 sm:min-h-12 sm:px-7 sm:text-[15px] lg:min-w-[165px]"
             >
               {newGameMutation.isPending ? "Starting..." : "New Match"}

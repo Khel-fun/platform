@@ -1,4 +1,4 @@
-import type { AppRouter } from "@platform/api/routers/index";
+import type { SpeedOLightAppRouter } from "@platform/api/routers/index";
 import { env } from "@platform/env/web";
 import { QueryCache, QueryClient } from "@tanstack/react-query";
 import { createTRPCClient, httpBatchLink } from "@trpc/client";
@@ -18,7 +18,7 @@ export const queryClient = new QueryClient({
   }),
 });
 
-export const trpcClient = createTRPCClient<AppRouter>({
+export const trpcClient = createTRPCClient<SpeedOLightAppRouter>({
   links: [
     httpBatchLink({
       url: `${env.VITE_SPEED_O_LIGHT_BACKEND_URL}/trpc`,
@@ -27,7 +27,7 @@ export const trpcClient = createTRPCClient<AppRouter>({
   ],
 });
 
-export const trpc = createTRPCOptionsProxy<AppRouter>({
+export const trpc = createTRPCOptionsProxy<SpeedOLightAppRouter>({
   client: trpcClient,
   queryClient,
 });
