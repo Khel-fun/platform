@@ -18,19 +18,36 @@ export type SupportedChainId = (typeof chains)[number]["id"];
 /** Chain ids the game accepts. Anything else triggers a network-switch prompt. */
 export const supportedChainIds: readonly number[] = chains.map((c) => c.id);
 
-export const defaultChainId: SupportedChainId = base.id;
+/**
+ * The chain we ask players to switch to. Driven by `VITE_CARD_WARS_CHAIN_ID`,
+ * falling back to Base if that value isn't one of the supported chains.
+ */
+export const defaultChainId: SupportedChainId =
+  env.VITE_CARD_WARS_CHAIN_ID !== undefined &&
+  supportedChainIds.includes(env.VITE_CARD_WARS_CHAIN_ID)
+    ? (env.VITE_CARD_WARS_CHAIN_ID as SupportedChainId)
+    : base.id;
 
 export function isSupportedChain(chainId: number | undefined): boolean {
   return chainId !== undefined && supportedChainIds.includes(chainId);
 }
 
+const connectors = [
+  injected(),
+  coinbaseWallet({ appName: "Card Wars" }),
+  ...(env.VITE_WALLETCONNECT_PROJECT_ID
+    ? [
+        walletConnect({
+          projectId: env.VITE_WALLETCONNECT_PROJECT_ID,
+          showQrModal: true,
+        }),
+      ]
+    : []),
+];
+
 export const wagmiConfig = createConfig({
   chains,
-  connectors: [
-    injected(),
-    coinbaseWallet({ appName: "Card Wars" }),
-    walletConnect({ projectId: env.VITE_WALLETCONNECT_PROJECT_ID ?? "YOUR_PROJECT_ID", showQrModal: true }),
-  ],
+  connectors,
   transports: {
     [base.id]: http(),
     [baseSepolia.id]: http(),

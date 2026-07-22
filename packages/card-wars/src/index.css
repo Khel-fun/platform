@@ -1,1 +1,58 @@
+/* Card Wars design typography: Tomorrow (titles), Jersey 25 (buttons),
+   VT323 (scores / pixel headings), Vend Sans (UI/status/timer).
+   The font-family tokens (--font-display/-button/-ui/-pixel) live in
+   @platform/ui globals; this loads the actual faces. */
+@import url("https://fonts.googleapis.com/css2?family=Tomorrow:wght@400;500;600;700;800&family=Jersey+25&family=VT323&family=Vend+Sans:wght@400;500;600;700&display=swap");
 @import "@platform/ui/globals.css";
+
+/* Art-directed Card Wars screen helpers not present in @platform/ui globals. */
+.cw-game-bg,
+.cw-game-stage,
+.cw-game-art {
+  position: absolute;
+  inset: 0;
+}
+
+@media (min-width: 640px) {
+  .cw-game-art {
+    inset: auto;
+    left: 50%;
+    top: 150px;
+    width: min(760px, 78vw);
+    height: min(500px, calc(100svh - 130px));
+    transform: translateX(-50%);
+  }
+
+  .cw-game-art img {
+    filter: brightness(0.76) saturate(0.55);
+  }
+}
+
+/* Wallet picker popup — Figma Frame 97 (node 150:736). */
+.cw-wallet-menu {
+  position: relative;
+  width: 256px;
+  border-radius: 40px;
+  background: #15342c;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: none;
+}
+
+.cw-wallet-menu::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  padding: 1px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 12%) top / 100% 50% no-repeat,
+    linear-gradient(0deg, rgba(255, 255, 255, 0.1), transparent 12%) bottom / 100% 50% no-repeat,
+    linear-gradient(135deg, rgba(255, 255, 255, 0.36) 0%, rgba(255, 255, 255, 0.2) 12%, transparent 30%) top left / 58% 58% no-repeat,
+    linear-gradient(315deg, rgba(255, 255, 255, 0.36) 0%, rgba(255, 255, 255, 0.2) 12%, transparent 30%) bottom right / 58% 58% no-repeat;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
