@@ -61,11 +61,11 @@ function SpeedOLight() {
   const playerAddrRef = useRef("");
   const pendingSubmitRef = useRef<PendingSubmit | null>(null);
 
-  const newGameMutation = useMutation(trpc.speedOLight.newGame.mutationOptions());
-  const submitMutation = useMutation(trpc.speedOLight.submitSession.mutationOptions());
+  const newGameMutation = useMutation(trpc.newGame.mutationOptions());
+  const submitMutation = useMutation(trpc.submitSession.mutationOptions());
 
   const statusQuery = useQuery({
-    ...trpc.speedOLight.getSessionStatus.queryOptions({ sessionId: sessionId! }),
+    ...trpc.getSessionStatus.queryOptions({ sessionId: sessionId! }),
     enabled: gameState === "VERIFYING" && !!sessionId,
     refetchInterval: (query) => {
       const status = query.state.data?.verificationStatus;

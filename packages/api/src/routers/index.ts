@@ -6,6 +6,7 @@ const healthCheck = publicProcedure.query(() => {
 });
 
 export const speedOLightRouter = router(speedOLightProcedures);
+export const speedOLightBackendRouter = router(speedOLightProcedures);
 
 export const speedOLightAppRouter = router({
   healthCheck,
@@ -25,4 +26,5 @@ export const appRouter = router({
 });
 export type AppRouter = typeof appRouter;
 export type SpeedOLightAppRouter = typeof speedOLightAppRouter;
+export type SpeedOLightBackendRouter = typeof speedOLightBackendRouter;
 export type ZkMinesAppRouter = typeof zkMinesAppRouter;
