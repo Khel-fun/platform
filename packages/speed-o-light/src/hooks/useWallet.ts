@@ -3,6 +3,14 @@ import { getAddress } from "viem";
 
 import { ensureBaseMainnet } from "../lib/base-mainnet";
 
+type WalletBridge = {
+  address?: `0x${string}`;
+  isConnecting?: boolean;
+  error?: string | null;
+  connect?: () => void | Promise<void>;
+  disconnect?: () => void;
+};
+
 type EthereumProvider = {
   request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
   on?: (event: string, handler: (...args: unknown[]) => void) => void;
@@ -36,10 +44,11 @@ function messageFromWalletError(err: unknown): string {
   return "Could not connect wallet.";
 }
 
-export function useWallet() {
+export function useWallet(bridge?: WalletBridge) {
   const [address, setAddress] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const bridgedAddress = bridge?.address ? getAddress(bridge.address) : null;
 
   const readConnectedAccounts = useCallback(async (eth: EthereumProvider) => {
     const raw = (await eth.request({ method: "eth_accounts" })) as string[];
@@ -82,6 +91,14 @@ export function useWallet() {
 
   const connect = useCallback(async () => {
     setError(null);
+    if (bridge?.connect) {
+      try {
+        await bridge.connect();
+      } catch (e) {
+        setError(messageFromWalletError(e));
+      }
+      return;
+    }
     const eth = getEthereum();
     if (!eth) {
       setError("Install a wallet (e.g. MetaMask) to connect.");
@@ -102,17 +119,18 @@ export function useWallet() {
     } finally {
       setIsConnecting(false);
     }
-  }, []);
+  }, [bridge]);
 
   const disconnect = useCallback(() => {
+    bridge?.disconnect?.();
     setAddress(null);
     setError(null);
-  }, []);
+  }, [bridge]);
 
   return {
-    address,
-    isConnecting,
-    error,
+    address: bridgedAddress ?? address,
+    isConnecting: bridge?.isConnecting ?? isConnecting,
+    error: bridge?.error ?? error,
     connect,
     disconnect,
     hasInjectedProvider: typeof window !== "undefined" && !!getEthereum(),

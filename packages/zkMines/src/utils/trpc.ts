@@ -1,6 +1,6 @@
-import type { AppRouter } from "@platform/api/routers/index";
+import type { ZkMinesAppRouter } from "@platform/api/routers/index";
 
-export type { AppRouter };
+export type AppRouter = ZkMinesAppRouter;
 import { env } from "@platform/env/web";
 import { QueryCache, QueryClient } from "@tanstack/react-query";
 import { createTRPCClient, httpBatchLink } from "@trpc/client";

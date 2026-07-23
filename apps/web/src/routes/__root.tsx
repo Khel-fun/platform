@@ -65,18 +65,18 @@ function RootComponent() {
   return (
     <>
       <HeadContent />
-      {isFullscreenGame ? (
-        <div className="h-svh w-full overflow-hidden">
-          <Outlet />
-        </div>
-      ) : (
-        <WalletProviders>
+      <WalletProviders>
+        {isFullscreenGame ? (
+          <div className="h-svh w-full overflow-auto">
+            <Outlet />
+          </div>
+        ) : (
           <div className="h-svh overflow-auto">
             <Header />
             <Outlet />
           </div>
-        </WalletProviders>
-      )}
+        )}
+      </WalletProviders>
       <Toaster richColors />
       {!isFullscreenGame && showDevtools && <TanStackRouterDevtools position="bottom-left" />}
       {!isFullscreenGame && showDevtools && <ReactQueryDevtools position="bottom" buttonPosition="bottom-right" />}
