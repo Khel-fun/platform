@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Bomb, CircleUserRound, Loader2, Trophy, Zap } from "lucide-react";
 import { useWallet } from "./hooks/useWallet";
+import { publishSettlementOnChain } from "./lib/publish-settlement";
 import { shortenAddress } from "./lib/shorten-address";
 import trpcRuntime from "./utils/trpc";
 
@@ -68,6 +69,28 @@ export function SpeedOLightGame({ walletBridge }: { walletBridge?: SpeedOLightWa
 
   const newGameMutation = useMutation(trpc.newGame.mutationOptions());
   const submitMutation = useMutation(trpc.submitSession.mutationOptions());
+  const publishMutation = useMutation({
+    mutationFn: async () => {
+      if (!sessionId || !wallet.address) {
+        throw new Error("Connect the wallet used for this match to publish XP.");
+      }
+
+      const payload = await trpcRuntime.trpcClient.getOnchainPayload.mutate({
+        sessionId,
+        playerAddress: wallet.address,
+      });
+      return publishSettlementOnChain(
+        {
+          gameId: payload.gameId as `0x${string}`,
+          score: payload.score,
+          xpEarned: payload.xpEarned,
+          won: payload.won,
+          signature: payload.signature as `0x${string}`,
+        },
+        wallet.address as `0x${string}`,
+      );
+    },
+  });
 
   const statusQuery = useQuery({
     ...trpc.getSessionStatus.queryOptions({ sessionId: sessionId! }),
@@ -178,6 +201,7 @@ export function SpeedOLightGame({ walletBridge }: { walletBridge?: SpeedOLightWa
     if (gameLoopRef.current) cancelAnimationFrame(gameLoopRef.current);
     playerAddrRef.current = addr;
     submitMutation.reset();
+    publishMutation.reset();
     setSessionId(null);
     setIsWinner(false);
     setScore(0);
@@ -208,7 +232,7 @@ export function SpeedOLightGame({ walletBridge }: { walletBridge?: SpeedOLightWa
         onError: () => setGameState("IDLE"),
       },
     );
-  }, [wallet.address, newGameMutation, submitMutation]);
+  }, [wallet.address, newGameMutation, publishMutation, submitMutation]);
 
   const resetToIdle = useCallback(() => {
     isPlayingRef.current = false;
@@ -220,7 +244,8 @@ export function SpeedOLightGame({ walletBridge }: { walletBridge?: SpeedOLightWa
     setTimeLeft(SESSION_LIMIT);
     setSessionId(null);
     submitMutation.reset();
-  }, [submitMutation]);
+    publishMutation.reset();
+  }, [publishMutation, submitMutation]);
 
   const confirmDisconnect = useCallback(() => {
     resetToIdle();
@@ -266,6 +291,7 @@ export function SpeedOLightGame({ walletBridge }: { walletBridge?: SpeedOLightWa
     verificationStatus !== "QUEUED";
   const resultState = gameState === "FINISHED" || gameState === "VERIFYING";
   const proofReady = gameState === "VERIFYING" && verificationSettled;
+  const verifiedXp = statusQuery.data?.xp ?? score * XP_PER_HIT;
 
   return (
     <main className="min-h-svh bg-[#020202] text-white font-sans">
@@ -527,7 +553,38 @@ export function SpeedOLightGame({ walletBridge }: { walletBridge?: SpeedOLightWa
                         >
                           {verificationFailed ? "Proofs Need Review." : "Proofs Verified."}
                         </p>
-
+                        {!verificationFailed &&
+                          (publishMutation.data ? (
+                            <>
+                              <p className="text-[11px] text-lime-200">XP transaction submitted.</p>
+                              <a
+                                href={`https://basescan.org/tx/${publishMutation.data}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-[11px] font-semibold text-[#bda8ff] underline underline-offset-4 hover:text-white"
+                              >
+                                View on BaseScan
+                              </a>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => publishMutation.mutate()}
+                                disabled={!wallet.address || publishMutation.isPending}
+                                className="mt-1 inline-flex min-h-9 items-center justify-center rounded-full bg-[#4c00ff] px-5 text-[10px] font-black uppercase tracking-[0.08em] text-white transition-colors hover:bg-[#5d16ff] disabled:cursor-not-allowed disabled:opacity-45"
+                              >
+                                {publishMutation.isPending
+                                  ? "Confirm in Wallet..."
+                                  : `Publish ${verifiedXp} XP Onchain`}
+                              </button>
+                              {publishMutation.isError && (
+                                <p className="max-w-[270px] text-[11px] leading-snug text-red-200/90">
+                                  {publishMutation.error.message}
+                                </p>
+                              )}
+                            </>
+                          ))}
                       </div>
                     ) : (
                       <div className="flex w-full max-w-[290px] flex-col items-center">

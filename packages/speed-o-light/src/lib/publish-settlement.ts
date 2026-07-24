@@ -43,11 +43,14 @@ export async function publishSettlementOnChain(
     transport,
   });
 
-  const contractAddress = env.VITE_SPEED_O_LIGHT_CONTRACT_ADDRESS as `0x${string}`;
+  const contractAddress = env.VITE_SPEED_O_LIGHT_CONTRACT_ADDRESS;
+  if (!contractAddress) {
+    throw new Error("Speed-O-Light contract address is not configured.");
+  }
 
   const hash = await walletClient.writeContract({
     account: playerAddress,
-    address: contractAddress,
+    address: contractAddress as `0x${string}`,
     abi: speedOLightStateAbi,
     functionName: "publishResult",
     args: [
