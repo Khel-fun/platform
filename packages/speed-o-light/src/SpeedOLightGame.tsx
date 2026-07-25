@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Bomb, CircleUserRound, Loader2, Trophy, Zap } from "lucide-react";
 import { useWallet } from "./hooks/useWallet";
-import { publishSettlementOnChain, type SettlementPayload } from "./lib/publish-settlement";
+import { publishSettlementOnChain } from "./lib/publish-settlement";
 import { shortenAddress } from "./lib/shorten-address";
 import trpcRuntime from "./utils/trpc";
 
@@ -29,9 +29,6 @@ type PendingSubmit = {
   playerAddress: string;
   tapSequence: Tap[];
   dangerTap: Tap;
-};
-type SettlementResponse = {
-  settlement?: SettlementPayload | null;
 };
 export type SpeedOLightWalletBridge = {
   address?: `0x${string}`;
@@ -83,9 +80,7 @@ export function SpeedOLightGame({ walletBridge }: { walletBridge?: SpeedOLightWa
     },
   });
   const settlement =
-    (submitMutation.data as SettlementResponse | undefined)?.settlement ??
-    (statusQuery.data as SettlementResponse | undefined)?.settlement ??
-    null;
+    submitMutation.data?.settlement ?? statusQuery.data?.settlement ?? null;
   const publishMutation = useMutation({
     mutationFn: async () => {
       if (!settlement || !wallet.address) {
