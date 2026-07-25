@@ -586,41 +586,6 @@ export const speedOLightProcedures = {
         verificationStatus: session.game_sessions.status === "FINISHED" ? "FINALIZED" : "QUEUED",
       };
     }),
-  getOnchainPayload: publicProcedure
-    .input(z.object({ sessionId: z.string(), playerAddress: z.string() }))
-    .mutation(async ({ input }) => {
-      const session = await prisma.speed_o_light_sessions.findUnique({
-        where: {
-          session_id: input.sessionId,
-        },
-        include: {
-          game_sessions: {
-            include: {
-              session_players: true,
-            },
-          },
-        },
-      });
-
-      if (!session || session.game_sessions.status !== "FINISHED") {
-        throw new Error("Verified session not found");
-      }
-
-      const player = session.game_sessions.session_players.find((candidate) =>
-        isSameAddress(candidate.player_address, input.playerAddress),
-      );
-      if (!player) {
-        throw new Error("Player does not match this session");
-      }
-
-      return {
-        gameId: bytes32FromUuid(input.sessionId),
-        score: session.score,
-        xpEarned: player.xp,
-        won: player.is_winner,
-        signature: `0x${"00".repeat(65)}`,
-      };
-    }),
 };
 
 export const zkMinesGameRouter = router({

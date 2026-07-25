@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Bomb, CircleUserRound, Loader2, Trophy, Zap } from "lucide-react";
 import { useWallet } from "./hooks/useWallet";
-import { publishSettlementOnChain } from "./lib/publish-settlement";
+import { publishSettlementOnChain, type SettlementPayload } from "./lib/publish-settlement";
 import { shortenAddress } from "./lib/shorten-address";
 import trpcRuntime from "./utils/trpc";
 
@@ -29,6 +29,9 @@ type PendingSubmit = {
   playerAddress: string;
   tapSequence: Tap[];
   dangerTap: Tap;
+};
+type SettlementResponse = {
+  settlement?: SettlementPayload | null;
 };
 export type SpeedOLightWalletBridge = {
   address?: `0x${string}`;
@@ -69,28 +72,6 @@ export function SpeedOLightGame({ walletBridge }: { walletBridge?: SpeedOLightWa
 
   const newGameMutation = useMutation(trpc.newGame.mutationOptions());
   const submitMutation = useMutation(trpc.submitSession.mutationOptions());
-  const publishMutation = useMutation({
-    mutationFn: async () => {
-      if (!sessionId || !wallet.address) {
-        throw new Error("Connect the wallet used for this match to publish XP.");
-      }
-
-      const payload = await trpcRuntime.trpcClient.getOnchainPayload.mutate({
-        sessionId,
-        playerAddress: wallet.address,
-      });
-      return publishSettlementOnChain(
-        {
-          gameId: payload.gameId as `0x${string}`,
-          score: payload.score,
-          xpEarned: payload.xpEarned,
-          won: payload.won,
-          signature: payload.signature as `0x${string}`,
-        },
-        wallet.address as `0x${string}`,
-      );
-    },
-  });
 
   const statusQuery = useQuery({
     ...trpc.getSessionStatus.queryOptions({ sessionId: sessionId! }),
@@ -99,6 +80,19 @@ export function SpeedOLightGame({ walletBridge }: { walletBridge?: SpeedOLightWa
       const status = query.state.data?.verificationStatus;
       if (!status) return 5000;
       return TERMINAL_STATUSES.includes(status) ? false : 5000;
+    },
+  });
+  const settlement =
+    (submitMutation.data as SettlementResponse | undefined)?.settlement ??
+    (statusQuery.data as SettlementResponse | undefined)?.settlement ??
+    null;
+  const publishMutation = useMutation({
+    mutationFn: async () => {
+      if (!settlement || !wallet.address) {
+        throw new Error("Signed settlement or player wallet is unavailable.");
+      }
+
+      return publishSettlementOnChain(settlement, wallet.address as `0x${string}`);
     },
   });
 
@@ -291,7 +285,6 @@ export function SpeedOLightGame({ walletBridge }: { walletBridge?: SpeedOLightWa
     verificationStatus !== "QUEUED";
   const resultState = gameState === "FINISHED" || gameState === "VERIFYING";
   const proofReady = gameState === "VERIFYING" && verificationSettled;
-  const verifiedXp = statusQuery.data?.xp ?? score * XP_PER_HIT;
 
   return (
     <main className="min-h-svh bg-[#020202] text-white font-sans">
@@ -554,6 +547,7 @@ export function SpeedOLightGame({ walletBridge }: { walletBridge?: SpeedOLightWa
                           {verificationFailed ? "Proofs Need Review." : "Proofs Verified."}
                         </p>
                         {!verificationFailed &&
+                          settlement &&
                           (publishMutation.data ? (
                             <>
                               <p className="text-[11px] text-lime-200">XP transaction submitted.</p>
@@ -576,7 +570,7 @@ export function SpeedOLightGame({ walletBridge }: { walletBridge?: SpeedOLightWa
                               >
                                 {publishMutation.isPending
                                   ? "Confirm in Wallet..."
-                                  : `Publish ${verifiedXp} XP Onchain`}
+                                  : "Publish XP Onchain"}
                               </button>
                               {publishMutation.isError && (
                                 <p className="max-w-[270px] text-[11px] leading-snug text-red-200/90">
