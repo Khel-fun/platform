@@ -22,6 +22,19 @@ const ZK_MINES_BOARD_SIZE = 81;
 const ZK_MINES_MINE_COUNT = 10;
 const ZK_MINES_MINE_VALUE = 9;
 const ZK_MINES_SAFE_CELLS = ZK_MINES_BOARD_SIZE - ZK_MINES_MINE_COUNT;
+const speedOLightSettlementSchema = z.object({
+  gameId: z
+    .string()
+    .regex(/^0x[0-9a-fA-F]{64}$/)
+    .transform((value) => value as `0x${string}`),
+  score: z.number(),
+  xpEarned: z.number(),
+  won: z.boolean(),
+  signature: z
+    .string()
+    .regex(/^0x[0-9a-fA-F]+$/)
+    .transform((value) => value as `0x${string}`),
+});
 
 type LeaderboardEntry = {
   rank: number;
@@ -528,6 +541,15 @@ export const speedOLightProcedures = {
         }),
       }),
     )
+    .output(
+      z.object({
+        success: z.boolean(),
+        score: z.number(),
+        xp: z.number(),
+        isWinner: z.boolean(),
+        settlement: speedOLightSettlementSchema.nullable(),
+      }),
+    )
     .mutation(async ({ input }) => {
       const safeHits = input.tapSequence.filter((tap: TapInput) => tap.is_tapped && !tap.is_danger).length;
       const dangerHit =
@@ -557,14 +579,24 @@ export const speedOLightProcedures = {
       });
 
       return {
-        sessionId: input.sessionId,
+        success: true,
         score: safeHits,
         xp,
-        verificationStatus: "FINALIZED",
+        isWinner: !dangerHit,
+        settlement: null,
       };
     }),
   getSessionStatus: publicProcedure
     .input(z.object({ sessionId: z.string() }))
+    .output(
+      z.object({
+        sessionStatus: z.string(),
+        score: z.number(),
+        verificationStatus: z.string().nullable(),
+        txHash: z.string().nullable(),
+        settlement: speedOLightSettlementSchema.nullable(),
+      }),
+    )
     .query(async ({ input }) => {
       const session = await prisma.speed_o_light_sessions.findUnique({
         where: {
@@ -579,11 +611,11 @@ export const speedOLightProcedures = {
       }
 
       return {
-        sessionId: input.sessionId,
-        status: String(session.game_sessions.status),
+        sessionStatus: String(session.game_sessions.status),
         score: session.score,
-        xp: session.score * SPEED_O_LIGHT_XP_PER_HIT,
         verificationStatus: session.game_sessions.status === "FINISHED" ? "FINALIZED" : "QUEUED",
+        txHash: null,
+        settlement: null,
       };
     }),
 };

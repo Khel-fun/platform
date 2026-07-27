@@ -3,6 +3,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Bomb, CircleUserRound, Loader2, Trophy, Zap } from "lucide-react";
 import { useWallet } from "../hooks/useWallet";
+import { publishSettlementOnChain, type SettlementPayload } from "../lib/publish-settlement";
 import { shortenAddress } from "../lib/shorten-address";
 import { trpc } from "../utils/trpc";
 
@@ -31,6 +32,9 @@ type PendingSubmit = {
   playerAddress: string;
   tapSequence: Tap[];
   dangerTap: Tap;
+};
+type SettlementResponse = {
+  settlement?: SettlementPayload | null;
 };
 const TERMINAL_STATUSES = ["FINALIZED", "AGGREGATED", "FAILED"];
 
@@ -71,6 +75,19 @@ function SpeedOLight() {
       const status = query.state.data?.verificationStatus;
       if (!status) return 5000;
       return TERMINAL_STATUSES.includes(status) ? false : 5000;
+    },
+  });
+  const settlement =
+    (submitMutation.data as SettlementResponse | undefined)?.settlement ??
+    (statusQuery.data as SettlementResponse | undefined)?.settlement ??
+    null;
+  const publishMutation = useMutation({
+    mutationFn: async () => {
+      if (!settlement || !wallet.address) {
+        throw new Error("Signed settlement or player wallet is unavailable.");
+      }
+
+      return publishSettlementOnChain(settlement, wallet.address as `0x${string}`);
     },
   });
 
@@ -173,6 +190,7 @@ function SpeedOLight() {
     if (gameLoopRef.current) cancelAnimationFrame(gameLoopRef.current);
     playerAddrRef.current = addr;
     submitMutation.reset();
+    publishMutation.reset();
     setSessionId(null);
     setIsWinner(false);
     setScore(0);
@@ -203,7 +221,7 @@ function SpeedOLight() {
         onError: () => setGameState("IDLE"),
       },
     );
-  }, [wallet.address, newGameMutation, submitMutation]);
+  }, [wallet.address, newGameMutation, publishMutation, submitMutation]);
 
   const resetToIdle = useCallback(() => {
     isPlayingRef.current = false;
@@ -215,7 +233,8 @@ function SpeedOLight() {
     setTimeLeft(SESSION_LIMIT);
     setSessionId(null);
     submitMutation.reset();
-  }, [submitMutation]);
+    publishMutation.reset();
+  }, [publishMutation, submitMutation]);
 
   const confirmDisconnect = useCallback(() => {
     resetToIdle();
@@ -522,7 +541,39 @@ function SpeedOLight() {
                         >
                           {verificationFailed ? "Proofs Need Review." : "Proofs Verified."}
                         </p>
-
+                        {!verificationFailed &&
+                          settlement &&
+                          (publishMutation.data ? (
+                            <>
+                              <p className="text-[11px] text-lime-200">XP transaction submitted.</p>
+                              <a
+                                href={`https://basescan.org/tx/${publishMutation.data}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-[11px] font-semibold text-[#bda8ff] underline underline-offset-4 hover:text-white"
+                              >
+                                View on BaseScan
+                              </a>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => publishMutation.mutate()}
+                                disabled={!wallet.address || publishMutation.isPending}
+                                className="mt-1 inline-flex min-h-9 items-center justify-center rounded-full bg-[#4c00ff] px-5 text-[10px] font-black uppercase tracking-[0.08em] text-white transition-colors hover:bg-[#5d16ff] disabled:cursor-not-allowed disabled:opacity-45"
+                              >
+                                {publishMutation.isPending
+                                  ? "Confirm in Wallet..."
+                                  : "Publish XP Onchain"}
+                              </button>
+                              {publishMutation.isError && (
+                                <p className="max-w-[270px] text-[11px] leading-snug text-red-200/90">
+                                  {publishMutation.error.message}
+                                </p>
+                              )}
+                            </>
+                          ))}
                       </div>
                     ) : (
                       <div className="flex w-full max-w-[290px] flex-col items-center">
