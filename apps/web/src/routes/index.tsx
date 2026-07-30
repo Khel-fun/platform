@@ -43,9 +43,9 @@ type GameFilter = string;
 
 const displayFont = { fontFamily: "Rajdhani, Inter, sans-serif" };
 const medalAssets = {
-  gold: "https://www.figma.com/api/mcp/asset/3bd3ad8e-1256-4fbd-a76e-4c3cf51c66b0",
-  silver: "https://www.figma.com/api/mcp/asset/c9836206-cdf7-4649-ade5-b72b0ecdc387",
-  bronze: "https://www.figma.com/api/mcp/asset/24c29318-9f17-44a4-9f00-60cced720116",
+  gold: "/leaderboard/gold-medal.png",
+  silver: "/leaderboard/silver-medal.png",
+  bronze: "/leaderboard/bronze-medal.png",
 } as const;
 
 type LeaderboardEntry = {
