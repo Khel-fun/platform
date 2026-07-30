@@ -11,6 +11,8 @@ allowBuilds:
   utf-8-validate: false
   blake-hash: false
   msgpackr-extract: true
+overrides:
+  "cuer>qr": "0.5.5"
 catalog:
   dotenv: ^17.2.2
   zod: ^4.1.13
