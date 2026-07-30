@@ -5,14 +5,14 @@ import * as React from "react";
 import { WagmiProvider } from "wagmi";
 import { base } from "wagmi/chains";
 import { connectorsForWallets } from "@rainbow-me/rainbowkit";
-import { injectedWallet, walletConnectWallet } from "@rainbow-me/rainbowkit/wallets";
+import { injectedWallet } from "@rainbow-me/rainbowkit/wallets";
 import { createConfig, http } from "wagmi";
 
 const connectors = connectorsForWallets(
   [
     {
       groupName: "Recommended",
-      wallets: [injectedWallet, walletConnectWallet],
+      wallets: [injectedWallet],
     },
   ],
   {
