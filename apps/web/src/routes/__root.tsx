@@ -8,6 +8,7 @@ import {
   useRouterState,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import { Fragment } from "react";
 
 import Header from "@/components/header";
 import { WalletProviders } from "@/components/wallet-providers";
@@ -57,6 +58,9 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 function RootComponent() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isFullscreenGame = pathname.startsWith("/game/");
+  const WalletProvider = pathname.startsWith("/game/card-wars")
+    ? Fragment
+    : WalletProviders;
   const showDevtools =
     import.meta.env.DEV &&
     typeof window !== "undefined" &&
@@ -65,7 +69,7 @@ function RootComponent() {
   return (
     <>
       <HeadContent />
-      <WalletProviders>
+      <WalletProvider>
         {isFullscreenGame ? (
           <div className="h-svh w-full overflow-auto">
             <Outlet />
@@ -76,7 +80,7 @@ function RootComponent() {
             <Outlet />
           </div>
         )}
-      </WalletProviders>
+      </WalletProvider>
       <Toaster richColors />
       {!isFullscreenGame && showDevtools && <TanStackRouterDevtools position="bottom-left" />}
       {!isFullscreenGame && showDevtools && <ReactQueryDevtools position="bottom" buttonPosition="bottom-right" />}
